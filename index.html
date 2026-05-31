@@ -3,863 +3,708 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ONEMOVE 월별 정산</title>
+<title>ONEMOVE 정산</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root {
-  --bg: #0f0f0f;
-  --bg2: #1a1a1a;
-  --bg3: #222;
-  --border: rgba(255,255,255,0.08);
-  --border2: rgba(255,255,255,0.15);
-  --text: #f0f0f0;
-  --text2: #999;
-  --text3: #666;
-  --green: #2ecc71;
-  --green2: #1a7a44;
-  --red: #e74c3c;
-  --red2: #7a1a1a;
-  --blue: #3b82f6;
-  --amber: #f59e0b;
-  --purple: #8b5cf6;
-  --radius: 10px;
-  --radius-sm: 6px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; min-height: 100vh; }
-
+:root{--bg:#f7f8fb;--bg2:#ffffff;--bg3:#f1f5f9;--border:rgba(15,23,42,0.09);--border2:rgba(15,23,42,0.16);--text:#111827;--text2:#475569;--text3:#94a3b8;--green:#16a34a;--red:#dc2626;--blue:#2563eb;--amber:#d97706;--purple:#7c3aed;--r:14px;--rs:9px;--shadow:0 10px 30px rgba(15,23,42,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);color:var(--text);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh}
+/* 최상단 모드 탭 */
+.mode-bar{display:flex;background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);box-shadow:0 2px 12px rgba(15,23,42,.04);position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}
+.mode-tab{flex:1;padding:14px;text-align:center;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;border-bottom:3px solid transparent}
+.mode-tab.on{color:var(--green);border-bottom-color:var(--green);background:rgba(22,163,74,.08)}
 /* 헤더 */
-.header { padding: 24px 32px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.logo { font-size: 18px; font-weight: 700; letter-spacing: .08em; }
-.logo span { color: var(--green); }
-.month-badge { font-size: 13px; color: var(--text2); background: var(--bg2); padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); }
-
-/* 업로드 영역 */
-.upload-section { padding: 40px 32px; }
-.upload-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
-.upload-sub { font-size: 14px; color: var(--text2); margin-bottom: 28px; line-height: 1.6; }
-.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; }
-.upload-box { border: 1.5px dashed var(--border2); border-radius: var(--radius); padding: 28px 24px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
-.upload-box:hover, .upload-box.dragover { border-color: var(--green); background: rgba(46,204,113,.06); }
-.upload-box.done { border-color: var(--green); border-style: solid; background: rgba(46,204,113,.08); }
-.upload-icon { font-size: 28px; margin-bottom: 10px; }
-.upload-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.upload-hint { font-size: 12px; color: var(--text3); }
-.upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.upload-filename { font-size: 12px; color: var(--green); margin-top: 8px; font-weight: 500; }
-.analyze-btn { margin-top: 20px; background: var(--green); color: #000; font-size: 15px; font-weight: 700; padding: 14px 40px; border: none; border-radius: var(--radius-sm); cursor: pointer; letter-spacing: .04em; transition: opacity .2s; }
-.analyze-btn:disabled { opacity: .35; cursor: not-allowed; }
-.analyze-btn:not(:disabled):hover { opacity: .88; }
-
-/* 대시보드 */
-.dashboard { display: none; padding: 0 32px 48px; }
-
-/* 탭 */
-.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 24px; padding-top: 20px; }
-.tab { padding: 10px 18px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
-.tab.on { color: var(--text); border-bottom-color: var(--green); font-weight: 600; }
-
-/* 메트릭 카드 */
-.mg { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.metric { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
-.metric-label { font-size: 11px; color: var(--text3); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; }
-.metric-value { font-size: 20px; font-weight: 700; }
-.metric-value.g { color: var(--green); }
-.metric-value.r { color: var(--red); }
-.metric-value.b { color: var(--blue); }
-.metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
-/* 카드 */
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; }
-.card-title { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 14px; }
-
-/* 행 */
-.row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 8px; }
-.row:last-child { border-bottom: none; }
-.row.sub { padding-left: 16px; }
-.row.sub .row-name { font-size: 12px; color: var(--text2); }
-.row.total { border-top: 1px solid var(--border2); padding-top: 12px; margin-top: 4px; font-weight: 700; border-bottom: none; }
-.row.clickable { cursor: pointer; border-radius: var(--radius-sm); transition: background .15s; }
-.row.clickable:hover { background: rgba(255,255,255,.04); margin: 0 -8px; padding: 7px 8px; }
-.row-name { flex: 2; min-width: 0; }
-.row-amt { font-weight: 600; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.row-amt.g { color: var(--green); }
-.row-amt.r { color: var(--red); }
-.row-amt.n { color: var(--text2); }
-.row-amt.b { color: var(--blue); }
-.row-amt.o { color: var(--amber); }
-
-/* 뱃지 */
-.bdg { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 100px; margin: 0 5px; }
-.bdg-corp { background: rgba(59,130,246,.2); color: #7bb3ff; }
-.bdg-pers { background: rgba(46,204,113,.15); color: #6fe0a0; }
-.bdg-hot { background: rgba(245,158,11,.15); color: #fbbf24; }
-.date-tag { font-size: 11px; padding: 2px 8px; border-radius: 100px; background: var(--bg3); color: var(--text2); white-space: nowrap; }
-.date-tag.hot { background: rgba(245,158,11,.15); color: #fbbf24; }
-
-/* 드릴다운 */
-.drill { display: none; background: var(--bg3); border-radius: var(--radius-sm); padding: 12px 14px; margin: 4px 0 8px; }
-.drill.open { display: block; }
-.drill-group { margin-bottom: 10px; }
-.drill-group-header { display: flex; justify-content: space-between; align-items: center; padding: 3px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-.drill-cat-label { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
-.drill-cat-dot { width: 6px; height: 6px; border-radius: 50%; }
-.drill-cat-total { font-size: 12px; font-weight: 700; color: var(--text); }
-.drill-item { display: flex; align-items: center; padding: 3px 0; font-size: 12px; gap: 6px; border-bottom: 1px solid rgba(255,255,255,.04); }
-.drill-item:last-child { border-bottom: none; }
-.drill-date { color: var(--text3); min-width: 40px; font-size: 11px; }
-.drill-name { color: var(--text2); flex: 1; }
-.drill-bank { font-size: 9px; padding: 1px 5px; border-radius: 100px; }
-.drill-item-amt { color: var(--red); font-weight: 600; min-width: 75px; text-align: right; font-variant-numeric: tabular-nums; }
-.drill-subtotal { display: flex; justify-content: space-between; padding: 6px 0 0; margin-top: 4px; border-top: 1px solid var(--border2); font-size: 12px; font-weight: 700; }
-.expand-arrow { font-size: 10px; color: var(--text3); margin-left: 5px; display: inline-block; transition: transform .2s; }
-.expand-arrow.open { transform: rotate(180deg); }
-
-/* 차트 */
-.chart-wrap { position: relative; width: 100%; margin-top: 8px; }
-
-/* 알림 박스 */
-.alert { border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.6; }
-.alert-info { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25); color: #93c5fd; }
-.alert-warn { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); color: #fcd34d; }
-.alert-success { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.25); color: #6ee7b7; }
-
-/* 섹션 타이틀 */
-.sec { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .07em; text-transform: uppercase; margin: 20px 0 10px; }
-
-/* 비교 테이블 */
-.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.compare-table th { font-size: 11px; font-weight: 600; color: var(--text3); padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border2); }
-.compare-table th:first-child { text-align: left; }
-.compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: right; font-variant-numeric: tabular-nums; }
-.compare-table td:first-child { text-align: left; color: var(--text2); }
-.compare-table tr.total td { font-weight: 700; border-top: 1px solid var(--border2); border-bottom: none; color: var(--green); }
-.compare-table tr.sub td:first-child { padding-left: 24px; font-size: 12px; color: var(--text3); }
-
+.header{padding:20px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fff}
+.logo{font-size:17px;font-weight:700;letter-spacing:.08em}.logo span{color:var(--green)}
+.hbadge{font-size:12px;color:var(--text2);background:var(--bg3);padding:6px 13px;border-radius:100px;border:1px solid var(--border);font-weight:600}
+/* 업로드 */
+.upload-wrap{padding:36px 28px}
+.upload-title{font-size:20px;font-weight:600;margin-bottom:6px}
+.upload-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:640px}
+.ubox{border:1.5px dashed var(--border2);border-radius:var(--r);padding:26px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:#fff;box-shadow:var(--shadow)}
+.ubox:hover,.ubox.over{border-color:var(--green);background:rgba(22,163,74,.06);transform:translateY(-1px)}
+.ubox.done{border-color:var(--green);border-style:solid;background:rgba(22,163,74,.08)}
+.ubox input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.uicon{font-size:26px;margin-bottom:8px}
+.ulabel{font-size:13px;font-weight:600;margin-bottom:3px}
+.uhint{font-size:11px;color:var(--text3)}
+.ufname{font-size:11px;color:var(--green);margin-top:6px;font-weight:500}
+.abtn{margin-top:18px;background:var(--green);color:#fff;font-size:14px;font-weight:800;padding:13px 38px;border:none;border-radius:var(--rs);cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 8px 18px rgba(22,163,74,.18)}
+.abtn:disabled{opacity:.3;cursor:not-allowed}
+.abtn:not(:disabled):hover{opacity:.95;transform:translateY(-1px)}
+.errmsg{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.3);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:#f87171;margin-top:14px;display:none}
 /* 로딩 */
-.loading { display: none; text-align: center; padding: 60px; }
-.loading-spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.error-msg { background: rgba(231,76,60,.12); border: 1px solid rgba(231,76,60,.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: #f87171; margin-top: 16px; display: none; }
+.loading{display:none;text-align:center;padding:60px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 대시보드 공통 */
+.dash{display:none;padding:0 28px 48px}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;padding-top:16px;overflow-x:auto}
+.tab{padding:9px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--green);border-bottom-color:var(--green);font-weight:800;background:rgba(22,163,74,.06)}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+.metric{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.ml{font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.mv{font-size:19px;font-weight:700}
+.mv.g{color:var(--green)}.mv.r{color:var(--red)}.mv.b{color:var(--blue)}.mv.o{color:var(--amber)}
+.ms{font-size:11px;color:var(--text3);margin-top:3px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+.row:last-child{border-bottom:none}
+.row.sub{padding-left:14px}
+.row.sub .rn{font-size:12px;color:var(--text2)}
+.row.tot{border-top:1px solid var(--border2);padding-top:10px;margin-top:3px;font-weight:700;border-bottom:none}
+.row.clk{cursor:pointer;border-radius:var(--rs);transition:background .15s}
+.row.clk:hover{background:rgba(15,23,42,.04);margin:0 -6px;padding-left:6px;padding-right:6px}
+.rn{flex:2;min-width:0}
+.ra{font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ra.g{color:var(--green)}.ra.r{color:var(--red)}.ra.n{color:var(--text2)}.ra.b{color:var(--blue)}.ra.o{color:var(--amber)}
+.bdg{display:inline-block;font-size:10px;padding:1px 6px;border-radius:100px;margin:0 4px}
+.bc{background:rgba(37,99,235,.12);color:#1d4ed8}
+.bp{background:rgba(22,163,74,.12);color:#15803d}
+.dtag{font-size:11px;padding:2px 7px;border-radius:100px;background:var(--bg3);color:var(--text2);white-space:nowrap}
+.dtag.hot{background:rgba(217,119,6,.12);color:#b45309}
+/* 드릴다운 */
+.drill{display:none;background:#f8fafc;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin:6px 0 8px}
+.drill.open{display:block}
+.dg{margin-bottom:8px}
+.dgh{display:flex;justify-content:space-between;padding:2px 0 5px;border-bottom:1px solid var(--border);margin-bottom:3px}
+.dgl{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+.dgdot{width:6px;height:6px;border-radius:50%}
+.dgt{font-size:12px;font-weight:700}
+.di{display:flex;align-items:center;padding:5px 0;font-size:12px;gap:6px;border-bottom:1px solid rgba(15,23,42,.06)}
+.di:last-child{border-bottom:none}
+.ddate{color:var(--text3);min-width:38px;font-size:11px}
+.dname{color:var(--text2);flex:1}
+.dbk{font-size:9px;padding:1px 5px;border-radius:100px}
+.damt{color:var(--red);font-weight:600;min-width:72px;text-align:right;font-variant-numeric:tabular-nums}
+.dsubt{display:flex;justify-content:space-between;padding:5px 0 0;margin-top:3px;border-top:1px solid var(--border2);font-size:12px;font-weight:700}
+.earr{font-size:10px;color:var(--text3);margin-left:4px;display:inline-block;transition:transform .2s}
+.earr.open{transform:rotate(180deg)}
+/* 알림 */
+.alert{border-radius:var(--rs);padding:9px 12px;margin-bottom:12px;font-size:12px;line-height:1.6}
+.ai{background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.22);color:#1d4ed8}
+.aw{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.24);color:#b45309}
+.as{background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.24);color:#15803d}
+.sec{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin:18px 0 8px}
+/* 비교테이블 */
+.ct{width:100%;border-collapse:collapse;font-size:13px}
+.ct th{font-size:11px;font-weight:600;color:var(--text3);padding:7px 10px;text-align:right;border-bottom:1px solid var(--border2)}
+.ct th:first-child{text-align:left}
+.ct td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums}
+.ct td:first-child{text-align:left;color:var(--text2)}
+.ct tr.tot td{font-weight:700;border-top:1px solid var(--border2);border-bottom:none;color:var(--green)}
+.ct tr.sub td:first-child{padding-left:22px;font-size:12px;color:var(--text3)}
+/* 고정비테이블 */
+.ft{width:100%;font-size:13px;border-collapse:collapse}
+.ft th{font-size:11px;color:var(--text3);font-weight:600;padding:6px 10px;text-align:left;border-bottom:1px solid var(--border2)}
+.ft td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ft tr:last-child td{border-bottom:none}
+.ft .amt{text-align:right;font-variant-numeric:tabular-nums;color:var(--red);font-weight:600}
+.cw{position:relative;width:100%;margin-top:6px}
+.new-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,.12);color:var(--green);margin-left:6px;vertical-align:middle;font-weight:700}
 
-/* 고정비 테이블 */
-.fixed-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-.fixed-table th { font-size: 11px; color: var(--text3); font-weight: 600; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border2); }
-.fixed-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.fixed-table tr:last-child td { border-bottom: none; }
-.fixed-table .amt { text-align: right; font-variant-numeric: tabular-nums; color: var(--red); font-weight: 600; }
-.fixed-total-row td { font-weight: 700; border-top: 1px solid var(--border2); color: var(--text); }
-
-/* 새 정산 버튼 */
-.reset-btn { font-size: 12px; color: var(--text3); background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer; transition: all .15s; }
-.reset-btn:hover { border-color: var(--border2); color: var(--text2); }
+/* Light UI visibility upgrades */
+.ct th,.ft th{background:#f8fafc;color:#64748b}
+.ct tr:hover td,.ft tr:hover td{background:#fbfdff}
+.tabs{background:#fff;border-radius:var(--r) var(--r) 0 0;padding-left:4px;padding-right:4px}
+.cw{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow)}
+.logo span{color:var(--green)}
 </style>
 </head>
 <body>
 
+<div class="mode-bar">
+  <div class="mode-tab on" id="mt-saved" onclick="switchMode('saved')">📊 3~5월 정산 결과</div>
+  <div class="mode-tab" id="mt-new" onclick="switchMode('new')">➕ 새 달 분석</div>
+</div>
+
 <div class="header">
   <div class="logo">ONE<span>MOVE</span> 정산</div>
-  <div id="month-badge" class="month-badge">파일을 업로드해주세요</div>
+  <div class="hbadge" id="hbadge">2026년 3~5월</div>
 </div>
 
-<!-- 업로드 섹션 -->
-<div class="upload-section" id="upload-section">
-  <div class="upload-title">월별 정산 분석</div>
-  <div class="upload-sub">법인 통장과 개인 통장 내역을 업로드하면 자동으로 분류·정산합니다.<br>카카오뱅크 엑셀 / 시화은행 BZ뱅크 엑셀 형식을 지원합니다.</div>
-
-  <div class="upload-grid">
-    <div class="upload-box" id="corp-box" ondragover="handleDrag(event,'corp')" ondragleave="handleDragLeave(event,'corp')" ondrop="handleDrop(event,'corp')">
-      <input type="file" accept=".xlsx,.xls" onchange="handleFile(event,'corp')">
-      <div class="upload-icon">🏢</div>
-      <div class="upload-label">법인 통장</div>
-      <div class="upload-hint">시화은행 엑셀 파일</div>
-      <div class="upload-filename" id="corp-filename"></div>
-    </div>
-    <div class="upload-box" id="pers-box" ondragover="handleDrag(event,'pers')" ondragleave="handleDragLeave(event,'pers')" ondrop="handleDrop(event,'pers')">
-      <input type="file" accept=".xlsx,.xls" onchange="handleFile(event,'pers')">
-      <div class="upload-icon">👤</div>
-      <div class="upload-label">개인 통장</div>
-      <div class="upload-hint">카카오뱅크 엑셀 파일</div>
-      <div class="upload-filename" id="pers-filename"></div>
-    </div>
+<!-- ===== 저장된 정산 (3~5월) ===== -->
+<div id="mode-saved">
+  <div class="dash" id="dash-saved" style="display:block">
+    <div class="tabs" id="tabs-saved"></div>
+    <div id="content-saved"></div>
   </div>
-
-  <button class="analyze-btn" id="analyze-btn" disabled onclick="analyze()">정산 분석하기</button>
-  <div class="error-msg" id="error-msg"></div>
 </div>
 
-<div class="loading" id="loading">
-  <div class="loading-spinner"></div>
-  <div style="color:var(--text2);font-size:14px">분류 중...</div>
-</div>
-
-<!-- 대시보드 -->
-<div class="dashboard" id="dashboard">
-  <div class="tabs" id="tabs"></div>
-  <div id="tab-content"></div>
+<!-- ===== 새 달 분석 ===== -->
+<div id="mode-new" style="display:none">
+  <div class="upload-wrap" id="upload-wrap">
+    <div class="upload-title">새 달 정산 분석</div>
+    <div class="upload-sub">법인 통장과 개인 통장 내역을 업로드하면 자동으로 분류·정산합니다.<br>카카오뱅크 엑셀 / 시화은행 BZ뱅크 엑셀 형식을 지원합니다.</div>
+    <div class="upload-grid">
+      <div class="ubox" id="corp-box" ondragover="hDrag(event,'corp')" ondragleave="hDragL(event,'corp')" ondrop="hDrop(event,'corp')">
+        <input type="file" accept=".xlsx,.xls" onchange="hFile(event,'corp')">
+        <div class="uicon">🏢</div>
+        <div class="ulabel">법인 통장</div>
+        <div class="uhint">시화은행 엑셀</div>
+        <div class="ufname" id="corp-fn"></div>
+      </div>
+      <div class="ubox" id="pers-box" ondragover="hDrag(event,'pers')" ondragleave="hDragL(event,'pers')" ondrop="hDrop(event,'pers')">
+        <input type="file" accept=".xlsx,.xls" onchange="hFile(event,'pers')">
+        <div class="uicon">👤</div>
+        <div class="ulabel">개인 통장</div>
+        <div class="uhint">카카오뱅크 엑셀</div>
+        <div class="ufname" id="pers-fn"></div>
+      </div>
+    </div>
+    <button class="abtn" id="abtn" disabled onclick="analyze()">정산 분석하기</button>
+    <div class="errmsg" id="errmsg"></div>
+  </div>
+  <div class="loading" id="loading"><div class="spinner"></div><div style="color:var(--text2);font-size:13px">분류 중...</div></div>
+  <div class="dash" id="dash-new">
+    <div class="tabs" id="tabs-new"></div>
+    <div id="content-new"></div>
+  </div>
 </div>
 
 <script>
 // ============================================================
-// 분류 룰 (확정된 기준)
+// 내장 데이터 (3~5월)
 // ============================================================
-const CORP_RULES = {
-  in: [
-    { keys: ['주식회사 9052','토스매출'], cat: '매출_카드정산' },
-    { keys: ['쿠팡매출'], cat: '매출_온라인(쿠팡)' },
-    { keys: ['이기현'], cat: '매출_시루정산' },
-    { keys: ['추윤호','조희설'], cat: '내부_가지급금환급' },
-    { keys: ['금강석'], cat: '내부이체_개→법' },
-    { keys: ['시흥세무서'], cat: '기타수입' },
-    { keys: ['DBSL'], cat: '기타수입' },
-  ],
-  out: [
-    { keys: ['050.베니스 월'], cat: '고정비_임대료' },
-    { fn: r => r.name.includes('배곧베니스') && r.out >= 500000, cat: '고정비_임대관리비' },
-    { fn: r => r.name.includes('배곧베니스') && r.out < 500000, cat: '고정비_임대기타' },
-    { keys: ['신한카드법인','아마존카'], cat: '고정비_법인카드결제' },
-    { keys: ['에브리렌탈'], cat: '고정비_렌탈' },
-    { keys: ['코코렌탈'], cat: '고정비_렌탈' },
-    { keys: ['LGU+'], cat: '고정비_통신비' },
-    { keys: ['아이샵케어'], cat: '고정비_기타' },
-    { keys: ['대성세무회계'], cat: '고정비_세무수수료' },
-    { keys: ['알고케어'], cat: '고정비_알고케어' },
-    { keys: ['신지원','아브뉴'], cat: '특수_구사무실(종료)' },
-    { keys: ['홍성미'], cat: '고정비_마케팅(텐텐)' },
-    { keys: ['레뷰'], cat: '변동_마케팅' },
-    { keys: ['네이버광고','네이버 9052'], cat: '변동_마케팅' },
-    { keys: ['애드피아몰'], cat: '변동_마케팅' },
-    { keys: ['백주현'], cat: '변동_마케팅' },
-    { keys: ['종이족자'], cat: '변동_마케팅' },
-    { keys: ['포스터'], cat: '변동_마케팅' },
-    { keys: ['김대성','이센셜'], cat: '변동_장비(심박수)' },
-    { keys: ['안용식'], cat: '특수_세무조정' },
-    { keys: ['권준학'], cat: '고정비_알바비(권준학)' },
-    { fn: r => r.name.includes('이기현'), cat: '특수_투자회수' },
-    { fn: r => r.name.includes('Npay') && r.out > 1000000, cat: '변동_기자재' },
-    { keys: ['Npay','쿠팡'], cat: '변동_소모품' },
-    { keys: ['주식회사 9052'], cat: '내부이체_법→개' },
-    { keys: ['랫풀다운'], cat: '내부_가수금환급' },
-    { keys: ['국고','경기시흥','사업소득세','지방세'], cat: '세금' },
-    { keys: ['관리비 12,1'], cat: '특수_구사무실(종료)' },
-    { keys: ['020.추가 주차'], cat: '고정비_임대기타' },
-    { keys: ['음료구매'], cat: '변동_소모품' },
-    { keys: ['블라인드'], cat: '변동_소모품', memo: true },
-  ]
+const SAVED = {
+  months:[3,4,5],
+  results:{
+    3:{month:3,corpStart:2735387,corpEnd:3949675,persStart:6298383,persEnd:4028774,totalStart:9033770,totalEnd:7978449,totalRev:22104447,cardRev:15109767,siruRev:2709067,cashMem:2960000,cashShort:476500,fridge:42120,etcRev:294500,fixedCorp:8643955,fixedPers:3550000,totalFixed:12193955,varCorp:978770,varPers:375797,totalVar:1354567,totalSpecial:5572740,opIncome:8555925,
+      fixedDetail:[
+        {name:'임대료 (베니스)',amt:3267300,bank:'법인'},{name:'법인카드 결제',amt:1625215,bank:'법인'},
+        {name:'알고케어',amt:103950,bank:'법인'},{name:'에브리렌탈',amt:110000,bank:'법인'},
+        {name:'코코렌탈',amt:55000,bank:'법인'},{name:'세무수수료',amt:165000,bank:'법인'},
+        {name:'LGU+ 통신비',amt:11990,bank:'법인'},{name:'아이샵케어',amt:17600,bank:'법인'},
+        {name:'구사무실 월세 (종료)',amt:4367000,bank:'법인+개인'},{name:'인건비 (이동신)',amt:1000000,bank:'개인'},
+        {name:'인테리어 할부',amt:1500000,bank:'개인'},{name:'텐텐마케팅',amt:1300000,bank:'개인'},
+        {name:'플레이스 상위노출',amt:600000,bank:'개인'},
+      ],
+      varDetail:[
+        {date:'03/02',name:'네이버광고 충전',cat:'마케팅',amt:100000,bank:'개인',memo:''},
+        {date:'03/03',name:'내통장결제 (인스타광고)',cat:'마케팅',amt:15797,bank:'개인',memo:''},
+        {date:'03/09',name:'백주현 (전단지)',cat:'마케팅',amt:66000,bank:'법인',memo:'두현기획'},
+        {date:'03/12',name:'종이족자',cat:'마케팅',amt:550000,bank:'법인',memo:'광고천하'},
+        {date:'03/16',name:'네이버광고충전',cat:'마케팅',amt:100000,bank:'법인',memo:''},
+        {date:'03/16',name:'포스터 3명 (애드피아)',cat:'마케팅',amt:41990,bank:'법인',memo:''},
+        {date:'03/19',name:'에어간판 뽀찌',cat:'마케팅',amt:200000,bank:'개인',memo:''},
+        {date:'03/23',name:'전단지할머니',cat:'마케팅',amt:60000,bank:'개인',memo:''},
+        {date:'03/25',name:'레뷰',cat:'마케팅',amt:165000,bank:'법인',memo:''},
+        {date:'03/30',name:'애드피아몰',cat:'마케팅',amt:16250,bank:'법인',memo:''},
+        {date:'03/18',name:'음료구매 (쿠팡)',cat:'소모품',amt:27530,bank:'법인',memo:''},
+        {date:'03/20',name:'KIM OLEG 택배',cat:'소모품',amt:12000,bank:'법인',memo:'한진착불'},
+      ]
+    },
+    4:{month:4,corpStart:7438552,corpEnd:1765026,persStart:4028774,persEnd:5838270,totalStart:11467326,totalEnd:7603296,totalRev:24792256,cardRev:10814840,siruRev:9162800,cashMem:4597000,cashShort:178000,fridge:29616,etcRev:10000,fixedCorp:8577821,fixedPers:4905000,totalFixed:13482821,varCorp:1837780,varPers:3770420,totalVar:5608200,totalSpecial:9132205,opIncome:5701235,
+      fixedDetail:[
+        {name:'임대료 (베니스)',amt:3267300,bank:'법인'},{name:'임대 관리비 (2달치)',amt:2178380,bank:'법인'},
+        {name:'법인카드 결제',amt:956766,bank:'법인'},{name:'구사무실 (종료)',amt:636290,bank:'법인'},
+        {name:'에브리렌탈',amt:110000,bank:'법인'},{name:'코코렌탈',amt:55000,bank:'법인'},
+        {name:'세무수수료',amt:165000,bank:'법인'},{name:'LGU+ 통신비',amt:89690,bank:'법인'},
+        {name:'아이샵케어',amt:17600,bank:'법인'},{name:'인건비 이동신 (2회)',amt:2000000,bank:'개인'},
+        {name:'인테리어 할부',amt:1500000,bank:'개인'},{name:'텐텐마케팅',amt:1300000,bank:'개인'},
+        {name:'요가강사비',amt:105000,bank:'개인'},
+      ],
+      varDetail:[
+        {date:'04/01',name:'Npay (하이록스 장비)',cat:'기자재',amt:1503000,bank:'법인',memo:''},
+        {date:'04/06',name:'철봉 구매',cat:'기자재',amt:630000,bank:'개인',memo:''},
+        {date:'04/17',name:'트레드밀 계약금',cat:'기자재',amt:140000,bank:'개인',memo:''},
+        {date:'04/27',name:'트레드밀 잔금',cat:'기자재',amt:1260000,bank:'개인',memo:''},
+        {date:'04/02',name:'전단지 할머니',cat:'마케팅',amt:90000,bank:'개인',memo:''},
+        {date:'04/03',name:'포스터',cat:'마케팅',amt:16250,bank:'개인',memo:''},
+        {date:'04/08',name:'백주현',cat:'마케팅',amt:20000,bank:'개인',memo:''},
+        {date:'04/08',name:'할머니 전단지',cat:'마케팅',amt:60000,bank:'개인',memo:''},
+        {date:'04/14',name:'애드피아몰',cat:'마케팅',amt:93580,bank:'법인',memo:''},
+        {date:'04/14',name:'백주현',cat:'마케팅',amt:25000,bank:'개인',memo:''},
+        {date:'04/14',name:'네이버광고 충전',cat:'마케팅',amt:150000,bank:'개인',memo:''},
+        {date:'04/17',name:'시트지인쇄',cat:'마케팅',amt:40000,bank:'개인',memo:''},
+        {date:'04/20',name:'전단지할머니',cat:'마케팅',amt:90000,bank:'개인',memo:''},
+        {date:'04/23',name:'시트지+스코어보드',cat:'마케팅',amt:50000,bank:'개인',memo:''},
+        {date:'04/27',name:'네이버광고 충전',cat:'마케팅',amt:200000,bank:'개인',memo:''},
+        {date:'04/01',name:'쿠팡',cat:'소모품',amt:17900,bank:'법인',memo:''},
+        {date:'04/02',name:'쿠팡 (전원케이블)',cat:'소모품',amt:18000,bank:'개인',memo:''},
+        {date:'04/03',name:'쿠팡',cat:'소모품',amt:32200,bank:'개인',memo:''},
+        {date:'04/06',name:'음료구매',cat:'소모품',amt:57560,bank:'개인',memo:''},
+        {date:'04/09',name:'고무판',cat:'소모품',amt:13000,bank:'개인',memo:''},
+        {date:'04/12',name:'Npay (블라인드)',cat:'소모품',amt:88200,bank:'법인',memo:''},
+        {date:'04/13',name:'Npay (바닥고무)',cat:'소모품',amt:18000,bank:'법인',memo:''},
+        {date:'04/13',name:'세탁비충전',cat:'소모품',amt:50000,bank:'개인',memo:''},
+        {date:'04/14',name:'화살표 고무판',cat:'소모품',amt:18300,bank:'개인',memo:''},
+        {date:'04/16',name:'머리끈·물티슈',cat:'소모품',amt:21390,bank:'개인',memo:''},
+        {date:'04/16',name:'신용운 (수건)',cat:'소모품',amt:280000,bank:'개인',memo:''},
+        {date:'04/17',name:'로젠 착불',cat:'소모품',amt:3500,bank:'개인',memo:''},
+        {date:'04/20',name:'스키 줄',cat:'소모품',amt:85500,bank:'개인',memo:''},
+        {date:'04/21',name:'닭가슴살',cat:'소모품',amt:58000,bank:'개인',memo:''},
+        {date:'04/23',name:'쿠팡 (무릎보호대)',cat:'소모품',amt:22800,bank:'개인',memo:''},
+        {date:'04/25',name:'씨유 (하이록스 간식)',cat:'소모품',amt:34300,bank:'개인',memo:''},
+        {date:'04/27',name:'쿠팡 음료',cat:'소모품',amt:109720,bank:'개인',memo:''},
+        {date:'04/28',name:'광릉불고기',cat:'식비',amt:70000,bank:'개인',memo:''},
+        {date:'04/30',name:'삼시세끼',cat:'식비',amt:21900,bank:'개인',memo:''},
+        {date:'04/24',name:'남스짐 화환',cat:'관계비',amt:85000,bank:'개인',memo:''},
+      ]
+    },
+    5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:2981874,fixedPers:4712300,totalFixed:7694174,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:0,opIncome:3686007,
+      fixedDetail:[
+        {name:'임대 관리비',amt:965260,bank:'법인'},{name:'법인카드 결제',amt:1553074,bank:'법인'},
+        {name:'알고케어',amt:103950,bank:'법인'},{name:'에브리렌탈',amt:110000,bank:'법인'},
+        {name:'코코렌탈',amt:55000,bank:'법인'},{name:'세무수수료',amt:165000,bank:'법인'},
+        {name:'LGU+ 통신비',amt:11990,bank:'법인'},{name:'아이샵케어',amt:17600,bank:'법인'},
+        {name:'인건비 (로몬)',amt:1837300,bank:'개인'},{name:'인건비 (요가)',amt:75000,bank:'개인'},
+        {name:'인테리어 할부',amt:1500000,bank:'개인'},{name:'텐텐마케팅',amt:1300000,bank:'개인'},
+      ],
+      varDetail:[
+        {date:'05/07',name:'에센셜 심박수 장비',cat:'장비(심박수)',amt:550000,bank:'법인',memo:''},
+        {date:'05/07',name:'전단지 할머니',cat:'마케팅',amt:90000,bank:'개인',memo:''},
+        {date:'05/11',name:'애드피아몰 (포스터)',cat:'마케팅',amt:80600,bank:'개인',memo:'포스터 6장'},
+        {date:'05/11',name:'성은선 (하이록스 스티커)',cat:'마케팅',amt:53000,bank:'개인',memo:''},
+        {date:'05/13',name:'현수막 하이록스',cat:'마케팅',amt:40000,bank:'개인',memo:''},
+        {date:'05/19',name:'네이버광고 충전',cat:'마케팅',amt:200000,bank:'개인',memo:''},
+        {date:'05/29',name:'트레드밀 예약금',cat:'기자재',amt:200000,bank:'개인',memo:''},
+        {date:'05/29',name:'트레드밀 잔금',cat:'기자재',amt:230000,bank:'개인',memo:''},
+        {date:'05/25',name:'남기표 (인테리어)',cat:'시설',amt:277000,bank:'개인',memo:''},
+        {date:'05/01',name:'프린트카페',cat:'소모품',amt:4000,bank:'개인',memo:''},
+        {date:'05/03',name:'손목거치대 쿠팡',cat:'소모품',amt:17500,bank:'개인',memo:''},
+        {date:'05/08',name:'모박사부대찌개',cat:'소모품',amt:36000,bank:'개인',memo:''},
+        {date:'05/09',name:'씨유',cat:'소모품',amt:11190,bank:'개인',memo:''},
+        {date:'05/10',name:'닭가슴살',cat:'소모품',amt:72000,bank:'개인',memo:''},
+        {date:'05/14',name:'쿠팡 (에너지젤)',cat:'소모품',amt:61500,bank:'개인',memo:''},
+        {date:'05/20',name:'쿠팡',cat:'소모품',amt:16900,bank:'개인',memo:''},
+        {date:'05/22',name:'쿠팡',cat:'소모품',amt:13260,bank:'개인',memo:''},
+        {date:'05/28',name:'쿠팡 (햇반·토레타·김)',cat:'소모품',amt:72770,bank:'개인',memo:''},
+        {date:'05/31',name:'쿠팡 (화이트마카·테이프)',cat:'소모품',amt:10180,bank:'개인',memo:''},
+      ]
+    }
+  }
 };
 
-const PERS_RULES = {
-  in: [
-    { fn: r => r.amt <= 2, cat: '기타_소액' },
-    { fn: r => r.amt <= 3000, cat: '매출_천원냉장고' },
-    { keys: ['이기현'], cat: '매출_시루정산' },
-    { keys: ['입출금통장 이자','예금이자'], cat: '기타_이자' },
-    { keys: ['캐시백'], cat: '기타_캐시백' },
-    { keys: ['환불'], cat: '매출조정_환불입금' },
-    { keys: ['의류판매'], cat: '매출_온라인(의류)' },
-    { fn: r => r.amt === 5000, cat: '매출_소액기타' },
-    { fn: r => [88400,66700,50900].includes(r.amt), cat: '엠티_참가비' },
-    { keys: ['금강석'], cat: '내부이체_법→개' },
-    { fn: r => [10000,15000,17000,20000,23500,25000,28000,30000,56000,60000,80000].includes(r.amt), cat: '매출_단기권' },
-    { fn: r => r.amt === 109500, cat: '매출_기타' },
-  ],
-  out: [
-    { fn: r => r.name.includes('월세') && r.amt > 2000000, cat: '특수_구월세(종료)' },
-    { keys: ['인테리어할부'], cat: '고정비_인테리어할부' },
-    { keys: ['남기표'], cat: '변동_시설' },
-    { keys: ['이동신'], cat: '고정비_인건비(이동신)' },
-    { keys: ['전유진','요가 급여'], cat: '고정비_인건비(요가)' },
-    { keys: ['로몬'], cat: '고정비_인건비(로몬)' },
-    { keys: ['플레이스'], cat: '고정비_마케팅(플레이스)' },
-    { keys: ['텐텐마케팅','김혜련'], cat: '고정비_마케팅(텐텐)' },
-    { keys: ['네이버광고','네이버 9052'], cat: '변동_마케팅' },
-    { keys: ['인스타'], cat: '변동_마케팅', memo: true },
-    { keys: ['전단지','전단지할머니','백주현'], cat: '변동_마케팅' },
-    { keys: ['포스터','시트지','에어간판','현수막','애드피아','성은선'], cat: '변동_마케팅' },
-    { keys: ['스티커'], cat: '변동_마케팅', memo: true },
-    { keys: ['법인으로'], cat: '내부이체_개→법' },
-    { keys: ['트레드밀'], cat: '변동_기자재' },
-    { keys: ['철봉'], cat: '변동_기자재' },
-    { keys: ['이명환','굿즈 티셔츠','하이록스 티셔츠'], cat: '특수_굿즈제작' },
-    { keys: ['잔디 롤매트'], cat: '특수_시설' },
-    { keys: ['세탁비'], cat: '변동_소모품' },
-    { keys: ['회식비'], cat: '특수_이벤트' },
-    { keys: ['펜션'], cat: '엠티_지출' },
-    { keys: ['황태','샤브','닭갈비','좋은날','방이'], cat: '엠티_지출' },
-    { fn: r => r.name.includes('이기훈') && r.memo && r.memo.includes('고기값'), cat: '엠티_지출' },
-    { keys: ['삼시세끼','광릉불고기','점심식사'], cat: '변동_식비' },
-    { keys: ['닭가슴살'], cat: '변동_소모품' },
-    { keys: ['음료구매','씨유','모박사'], cat: '변동_소모품' },
-    { keys: ['쿠팡'], cat: '변동_소모품' },
-    { keys: ['고무판','모래주머니','스키 줄','머리끈','신용운','프린트카페','로젠','손목거치대'], cat: '변동_소모품' },
-    { keys: ['무릎보호대','수건'], cat: '변동_소모품', memo: true },
-    { keys: ['이사 보증금'], cat: '특수_이사' },
-    { fn: r => r.name.includes('이사') && r.amt >= 400000, cat: '특수_이사' },
-    { keys: ['폐기물처리비'], cat: '특수_이사' },
-    { keys: ['환불','환뷸'], cat: '매출조정_환불출금' },
-    { keys: ['거스름돈','페이백'], cat: '매출조정_거스름돈' },
-    { keys: ['화환'], cat: '변동_관계비' },
-  ]
-};
+// ============================================================
+// 공통 유틸
+// ============================================================
+const MN = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const CCAT = {'마케팅':'#3b82f6','소모품':'#22c55e','기자재':'#f59e0b','장비(심박수)':'#8b5cf6','식비':'#ef4444','시설':'#6b7280','관계비':'#ec4899','기타':'#9ca3af'};
+const tc='rgba(51,65,85,0.78)', gc='rgba(15,23,42,0.08)';
+let charts={};
 
-// 기본 분류: 회원권
-function classifyCorpIn(name, memo, amt) {
-  for (const rule of CORP_RULES.in) {
-    if (rule.fn && rule.fn({name, memo, amt})) return rule.cat;
-    if (rule.keys && rule.keys.some(k => name.includes(k))) return rule.cat;
-  }
-  return '매출_기타';
-}
-function classifyCorpOut(name, memo, amt) {
-  for (const rule of CORP_RULES.out) {
-    if (rule.fn && rule.fn({name, memo, out: amt})) return rule.cat;
-    if (rule.memo && rule.keys && rule.keys.some(k => (memo||'').includes(k))) return rule.cat;
-    if (!rule.memo && rule.keys && rule.keys.some(k => name.includes(k))) return rule.cat;
-  }
-  return '지출_기타';
-}
-function classPersIn(name, memo, amt) {
-  for (const rule of PERS_RULES.in) {
-    if (rule.fn && rule.fn({name, memo, amt})) return rule.cat;
-    if (rule.keys && rule.keys.some(k => name.includes(k))) return rule.cat;
-  }
-  return '매출_회원권';
-}
-function classPerOut(name, memo, amt) {
-  for (const rule of PERS_RULES.out) {
-    if (rule.fn && rule.fn({name, memo, amt})) return rule.cat;
-    if (rule.memo && rule.keys && rule.keys.some(k => (memo||'').includes(k))) return rule.cat;
-    if (!rule.memo && rule.keys && rule.keys.some(k => name.includes(k))) return rule.cat;
-  }
-  return '변동_기타';
-}
+function fmt(n){return(n===undefined||n===null||isNaN(n))?'-':Math.round(n).toLocaleString();}
+function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
 
 // ============================================================
-// 파일 파싱
+// 모드 전환
 // ============================================================
-let files = { corp: null, pers: null };
-
-function handleFile(e, type) {
-  const f = e.target.files[0];
-  if (!f) return;
-  files[type] = f;
-  document.getElementById(type+'-filename').textContent = f.name;
-  document.getElementById(type+'-box').classList.add('done');
-  checkReady();
-}
-function handleDrag(e, type) { e.preventDefault(); document.getElementById(type+'-box').classList.add('dragover'); }
-function handleDragLeave(e, type) { document.getElementById(type+'-box').classList.remove('dragover'); }
-function handleDrop(e, type) {
-  e.preventDefault();
-  document.getElementById(type+'-box').classList.remove('dragover');
-  const f = e.dataTransfer.files[0];
-  if (!f) return;
-  files[type] = f;
-  document.getElementById(type+'-filename').textContent = f.name;
-  document.getElementById(type+'-box').classList.add('done');
-  checkReady();
-}
-function checkReady() {
-  document.getElementById('analyze-btn').disabled = !(files.corp && files.pers);
-}
-
-function readXlsx(file) {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const wb = XLSX.read(e.target.result, {type:'array'});
-        const sheets = {};
-        wb.SheetNames.forEach(n => { sheets[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, defval:''}); });
-        res(sheets);
-      } catch(err) { rej(err); }
-    };
-    reader.onerror = rej;
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-function parseCorpSheet(rows) {
-  const txs = [];
-  for (const row of rows) {
-    const dateStr = String(row[2]||'');
-    if (!dateStr.match(/^\d{4}\.\d{2}\.\d{2}/)) continue;
-    const date = dateStr.substring(0,10).replace(/\./g,'-');
-    const name = String(row[6]||'').trim();
-    const memo = String(row[10]||row[11]||'').trim();
-    const inAmt = parseFloat(String(row[4]).replace(/,/g,''))||0;
-    const outAmt = parseFloat(String(row[5]).replace(/,/g,''))||0;
-    const bal = parseFloat(String(row[7]).replace(/,/g,''))||0;
-    if (!name || (inAmt===0 && outAmt===0)) continue;
-    const cat = inAmt > 0 ? classifyCorpIn(name, memo, inAmt) : classifyCorpOut(name, memo, outAmt);
-    txs.push({ date, name, memo, in: inAmt, out: outAmt, bal, cat, src: '법인' });
-  }
-  return txs.sort((a,b) => a.date.localeCompare(b.date));
-}
-
-function parsePersSheet(rows) {
-  let headerIdx = -1;
-  for (let i=0; i<rows.length; i++) {
-    if (rows[i].some(c => String(c).includes('거래일시'))) { headerIdx = i; break; }
-  }
-  if (headerIdx < 0) throw new Error('개인 내역 헤더를 찾을 수 없습니다.');
-  const txs = [];
-  for (let i=headerIdx+1; i<rows.length; i++) {
-    const row = rows[i];
-    const dateStr = String(row[1]||'').trim();
-    if (!dateStr.match(/^\d{4}\.\d{2}\.\d{2}/)) continue;
-    const type = String(row[2]||'').trim();
-    if (!['입금','출금'].includes(type)) continue;
-    const date = dateStr.substring(0,10).replace(/\./g,'-');
-    const amt = Math.abs(parseFloat(String(row[3]).replace(/,/g,''))||0);
-    const name = String(row[6]||'').trim();
-    const memo = String(row[7]||'').trim();
-    const bal = parseFloat(String(row[4]).replace(/,/g,''))||0;
-    if (!name || amt===0) continue;
-    const cat = type==='입금' ? classPersIn(name, memo, amt) : classPerOut(name, memo, amt);
-    txs.push({ date, name, memo, type, amt, bal, cat, src: '개인' });
-  }
-  return txs.sort((a,b) => a.date.localeCompare(b.date));
-}
-
-// ============================================================
-// 분석 메인
-// ============================================================
-const REV_CATS_CORP = ['매출_카드정산','매출_온라인(쿠팡)'];
-const REV_CATS_PERS = ['매출_회원권','매출_단기권','매출_시루정산','매출_천원냉장고','매출_소액기타','매출_온라인(의류)','매출_기타'];
-const FIXED_CORP = ['고정비_임대료','고정비_임대관리비','고정비_법인카드결제','고정비_렌탈','고정비_통신비','고정비_세무수수료','고정비_기타','고정비_알고케어','고정비_마케팅(텐텐)','고정비_알바비(권준학)'];
-const FIXED_PERS = ['고정비_인건비(이동신)','고정비_인건비(요가)','고정비_인건비(로몬)','고정비_인테리어할부','고정비_마케팅(플레이스)','고정비_마케팅(텐텐)'];
-
-const CAT_COLORS = {
-  '마케팅':'#3b82f6','소모품':'#22c55e','기자재':'#f59e0b',
-  '장비(심박수)':'#8b5cf6','식비':'#ef4444','시설':'#6b7280','관계비':'#ec4899','기타':'#9ca3af'
-};
-
-function fmt(n) {
-  if (n === undefined || n === null || isNaN(n)) return '-';
-  return Math.round(n).toLocaleString();
-}
-
-function getMonth(d) { return parseInt(d.substring(5,7)); }
-
-function calcMonth(corpTxs, persTxs, month) {
-  const cm = corpTxs.filter(t => getMonth(t.date) === month);
-  const pm = persTxs.filter(t => getMonth(t.date) === month);
-
-  // 잔고
-  let corpStart = 0, corpEnd = 0;
-  if (cm.length) {
-    const first = cm[0];
-    corpStart = first.in > 0 ? first.bal - first.in : first.bal + first.out;
-    corpEnd = cm[cm.length-1].bal;
-  }
-  let persStart = 0, persEnd = 0;
-  if (pm.length) {
-    const first = pm[0];
-    persStart = first.type==='출금' ? first.bal + first.amt : first.bal - first.amt;
-    persEnd = pm[pm.length-1].bal;
-  }
-
-  // 매출
-  const corpRev = cm.filter(t => REV_CATS_CORP.includes(t.cat)).reduce((s,t)=>s+t.in, 0);
-  const persRev = pm.filter(t => t.type==='입금' && REV_CATS_PERS.includes(t.cat)).reduce((s,t)=>s+t.amt, 0);
-  const totalRev = corpRev + persRev;
-
-  // 매출 세부
-  const cardRev = cm.filter(t=>t.cat==='매출_카드정산').reduce((s,t)=>s+t.in,0);
-  const siruRev = pm.filter(t=>t.type==='입금'&&t.cat==='매출_시루정산').reduce((s,t)=>s+t.amt,0);
-  const cashMem = pm.filter(t=>t.type==='입금'&&t.cat==='매출_회원권').reduce((s,t)=>s+t.amt,0);
-  const cashShort = pm.filter(t=>t.type==='입금'&&t.cat==='매출_단기권').reduce((s,t)=>s+t.amt,0);
-  const fridge = pm.filter(t=>t.type==='입금'&&t.cat==='매출_천원냉장고').reduce((s,t)=>s+t.amt,0);
-  const etcRev = pm.filter(t=>t.type==='입금'&&['매출_온라인(의류)','매출_소액기타','매출_기타'].includes(t.cat)).reduce((s,t)=>s+t.amt,0);
-
-  // 고정비
-  const fc = cm.filter(t=>FIXED_CORP.includes(t.cat)).reduce((s,t)=>s+t.out,0);
-  const fp = pm.filter(t=>t.type==='출금'&&FIXED_PERS.includes(t.cat)).reduce((s,t)=>s+t.amt,0);
-  const totalFixed = fc + fp;
-
-  // 변동비
-  const vc = cm.filter(t=>t.cat.startsWith('변동_')).reduce((s,t)=>s+t.out,0);
-  const vp = pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).reduce((s,t)=>s+t.amt,0);
-  const totalVar = vc + vp;
-
-  // 변동비 세부
-  const varItems = [];
-  cm.filter(t=>t.cat.startsWith('변동_')).forEach(t => varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.out,bank:'법인',memo:t.memo}));
-  pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).forEach(t => varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.amt,bank:'개인',memo:t.memo}));
-  varItems.sort((a,b)=>a.date.localeCompare(b.date));
-
-  // 특수지출
-  const specialCatsCorp = ['특수_구사무실(종료)','특수_투자회수','특수_세무조정'];
-  const specialCatsPers = ['특수_구월세(종료)','특수_굿즈제작','특수_시설','특수_이벤트','특수_이사'];
-  const spC = cm.filter(t=>specialCatsCorp.includes(t.cat)).reduce((s,t)=>s+t.out,0);
-  const spP = pm.filter(t=>t.type==='출금'&&specialCatsPers.includes(t.cat)).reduce((s,t)=>s+t.amt,0);
-
-  const opIncome = totalRev - totalFixed - totalVar;
-
-  // 고정비 세부
-  const fixedDetail = [];
-  cm.filter(t=>FIXED_CORP.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,cat:t.cat.replace('고정비_',''),amt:t.out,bank:'법인'}));
-  pm.filter(t=>t.type==='출금'&&FIXED_PERS.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,cat:t.cat.replace('고정비_',''),amt:t.amt,bank:'개인'}));
-
-  return {
-    month, corpStart, corpEnd, persStart, persEnd,
-    totalStart: corpStart+persStart, totalEnd: corpEnd+persEnd,
-    totalRev, corpRev, persRev, cardRev, siruRev, cashMem, cashShort, fridge, etcRev,
-    totalFixed, fixedCorp: fc, fixedPers: fp,
-    totalVar, varCorp: vc, varPers: vp, varItems,
-    totalSpecial: spC+spP, opIncome, fixedDetail
-  };
-}
-
-let analysisData = null;
-
-async function analyze() {
-  document.getElementById('error-msg').style.display = 'none';
-  document.getElementById('upload-section').style.display = 'none';
-  document.getElementById('loading').style.display = 'block';
-
-  try {
-    const [corpSheets, persSheets] = await Promise.all([readXlsx(files.corp), readXlsx(files.pers)]);
-    const corpRows = Object.values(corpSheets)[0];
-    const persRows = Object.values(persSheets)[0];
-
-    const corpTxs = parseCorpSheet(corpRows);
-    const persTxs = parsePersSheet(persRows);
-
-    // 포함된 월 감지
-    const months = [...new Set([...corpTxs, ...persTxs].map(t => getMonth(t.date)))].sort();
-
-    const results = {};
-    months.forEach(m => { results[m] = calcMonth(corpTxs, persTxs, m); });
-
-    analysisData = { results, months, corpTxs, persTxs };
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-
-    // 월 배지
-    const yr = corpTxs[0]?.date.substring(0,4) || new Date().getFullYear();
-    document.getElementById('month-badge').textContent = `${yr}년 ${months[0]}~${months[months.length-1]}월`;
-
-    renderDashboard(results, months);
-  } catch(err) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('upload-section').style.display = 'block';
-    const em = document.getElementById('error-msg');
-    em.textContent = '파일 분석 중 오류: ' + err.message;
-    em.style.display = 'block';
-  }
-}
-
-// ============================================================
-// 렌더링
-// ============================================================
-let activeTab = 'summary';
-let drillOpen = {};
-let charts = {};
-
-function renderDashboard(results, months) {
-  const tabBar = document.getElementById('tabs');
-  const monthNames = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  const tabDefs = [
-    { key:'summary', label:'월별 요약' },
-    { key:'revenue', label:'매출 분석' },
-    { key:'fixed',   label:'고정비' },
-    ...months.map(m => ({ key:'m'+m, label: monthNames[m] }))
-  ];
-
-  tabBar.innerHTML = tabDefs.map(t =>
-    `<div class="tab ${t.key==='summary'?'on':''}" onclick="switchTab('${t.key}')">${t.label}</div>`
-  ).join('');
-
-  switchTab('summary');
-}
-
-function switchTab(key) {
-  activeTab = key;
-  document.querySelectorAll('.tab').forEach(el => el.classList.toggle('on', el.textContent.trim() === getTabLabel(key)));
-  renderContent(key);
-}
-
-function getTabLabel(key) {
-  if (key==='summary') return '월별 요약';
-  if (key==='revenue') return '매출 분석';
-  if (key==='fixed') return '고정비';
-  const mn = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  return mn[parseInt(key.replace('m',''))];
-}
-
-function destroyCharts() {
-  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
-  charts = {};
-}
-
-function renderContent(key) {
+function switchMode(m){
+  document.getElementById('mode-saved').style.display = m==='saved'?'':'none';
+  document.getElementById('mode-new').style.display = m==='new'?'':'none';
+  document.getElementById('mt-saved').classList.toggle('on', m==='saved');
+  document.getElementById('mt-new').classList.toggle('on', m==='new');
+  document.getElementById('hbadge').textContent = m==='saved'?'2026년 3~5월':'새 달 분석';
   destroyCharts();
-  const { results, months } = analysisData;
-  const el = document.getElementById('tab-content');
-  const monthNames = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  if(m==='saved') renderDash('saved', SAVED.results, SAVED.months);
+}
 
-  if (key === 'summary') {
-    el.innerHTML = renderSummary(results, months, monthNames);
-    requestAnimationFrame(() => drawSummaryChart(results, months, monthNames));
-  } else if (key === 'revenue') {
-    el.innerHTML = renderRevenue(results, months, monthNames);
-    requestAnimationFrame(() => drawRevenueChart(results, months, monthNames));
-  } else if (key === 'fixed') {
-    el.innerHTML = renderFixed(results, months, monthNames);
-    requestAnimationFrame(() => drawFixedChart(results, months, monthNames));
-  } else {
-    const m = parseInt(key.replace('m',''));
-    el.innerHTML = renderMonthDetail(results[m], monthNames[m]);
-    // 드릴다운 이벤트
-    document.querySelectorAll('.row.clickable').forEach(row => {
-      row.addEventListener('click', () => {
-        const id = row.getAttribute('data-drill');
-        const panel = document.getElementById('drill-'+id);
-        const icon = document.getElementById('icon-'+id);
-        if (!panel) return;
-        const isOpen = panel.classList.contains('open');
-        panel.classList.toggle('open', !isOpen);
-        if (icon) icon.classList.toggle('open', !isOpen);
+// ============================================================
+// 대시보드 렌더링
+// ============================================================
+function renderDash(id, results, months){
+  const tabEl = document.getElementById('tabs-'+id);
+  const defs = [
+    {key:'summary',label:'월별 요약'},
+    {key:'revenue',label:'매출 분석'},
+    {key:'fixed',label:'고정비'},
+    ...months.map(m=>({key:'m'+m, label:MN[m]}))
+  ];
+  tabEl.innerHTML = defs.map((t,i)=>`<div class="tab ${i===0?'on':''}" onclick="swTab('${id}','${t.key}')">${t.label}</div>`).join('');
+  swTab(id,'summary');
+}
+
+function swTab(id, key){
+  destroyCharts();
+  document.querySelectorAll(`#tabs-${id} .tab`).forEach((el,i)=>{
+    const keys=['summary','revenue','fixed',...(id==='saved'?SAVED.months:newMonths).map(m=>'m'+m)];
+    el.classList.toggle('on', keys[i]===key);
+  });
+  const results = id==='saved' ? SAVED.results : newResults;
+  const months = id==='saved' ? SAVED.months : newMonths;
+  const el = document.getElementById('content-'+id);
+  if(key==='summary') el.innerHTML = renderSummary(results,months);
+  else if(key==='revenue') el.innerHTML = renderRevenue(results,months);
+  else if(key==='fixed') el.innerHTML = renderFixed(results,months);
+  else{
+    const m=parseInt(key.replace('m',''));
+    el.innerHTML = renderMonth(results[m], MN[m]);
+    el.querySelectorAll('.row.clk').forEach(row=>{
+      row.addEventListener('click',()=>{
+        const did=row.getAttribute('data-drill');
+        const panel=document.getElementById('drill-'+did);
+        const icon=document.getElementById('earr-'+did);
+        if(!panel)return;
+        const open=panel.classList.contains('open');
+        panel.classList.toggle('open',!open);
+        if(icon)icon.classList.toggle('open',!open);
       });
     });
   }
+  requestAnimationFrame(()=>drawCharts(key,results,months));
 }
 
-function renderSummary(results, months, mn) {
-  const ms = months.map(m => results[m]);
-  const lastStart = ms[0]?.totalStart || 0;
-  const lastEnd = ms[ms.length-1]?.totalEnd || 0;
-
-  let rows = `
-    <tr><td>총 매출</td>${months.map(m=>`<td style="color:var(--green);font-weight:600">${fmt(results[m].totalRev)}</td>`).join('')}</tr>
-    <tr class="sub"><td>ㄴ 카드정산</td>${months.map(m=>`<td style="color:var(--text2)">${fmt(results[m].cardRev)}</td>`).join('')}</tr>
-    <tr class="sub"><td>ㄴ 시루정산</td>${months.map(m=>`<td style="color:var(--text2)">${fmt(results[m].siruRev)}</td>`).join('')}</tr>
-    <tr class="sub"><td>ㄴ 현금회원권</td>${months.map(m=>`<td style="color:var(--text2)">${fmt(results[m].cashMem)}</td>`).join('')}</tr>
-    <tr><td>총 고정비</td>${months.map(m=>`<td style="color:var(--red);font-weight:600">${fmt(results[m].totalFixed)}</td>`).join('')}</tr>
-    <tr><td>총 변동비</td>${months.map(m=>`<td style="color:var(--red)">${fmt(results[m].totalVar)}</td>`).join('')}</tr>
-    <tr><td>특수 지출</td>${months.map(m=>`<td style="color:var(--amber)">${fmt(results[m].totalSpecial)}</td>`).join('')}</tr>
-    <tr class="total"><td>영업 이익</td>${months.map(m=>`<td>${fmt(results[m].opIncome)}</td>`).join('')}</tr>
-  `;
-
+// ============================================================
+// 탭 콘텐츠 렌더러
+// ============================================================
+function renderSummary(R,M){
+  const ms=M.map(m=>R[m]);
+  const lastStart=ms[0]?.totalStart||0, lastEnd=ms[ms.length-1]?.totalEnd||0;
+  const diff=lastEnd-lastStart;
   return `
-    <div class="mg">
-      <div class="metric"><div class="metric-label">분석 기간</div><div class="metric-value b">${mn[months[0]]}~${mn[months[months.length-1]]}</div></div>
-      <div class="metric"><div class="metric-label">기간 초 통합잔고</div><div class="metric-value">${fmt(lastStart)}</div></div>
-      <div class="metric"><div class="metric-label">현재 통합잔고</div><div class="metric-value g">${fmt(lastEnd)}</div></div>
-      <div class="metric"><div class="metric-label">잔고 증감</div><div class="metric-value ${lastEnd>=lastStart?'g':'r'}">${lastEnd>=lastStart?'+':''}${fmt(lastEnd-lastStart)}</div></div>
-    </div>
-    <div class="card">
-      <table class="compare-table">
-        <thead><tr><th>항목</th>${months.map(m=>`<th>${mn[m]}</th>`).join('')}</tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <div class="chart-wrap" style="height:240px"><canvas id="chart-summary"></canvas></div>
-  `;
+  <div class="mg">
+    <div class="metric"><div class="ml">기간 초 잔고</div><div class="mv">${fmt(lastStart)}</div></div>
+    <div class="metric"><div class="ml">현재 잔고</div><div class="mv g">${fmt(lastEnd)}</div></div>
+    <div class="metric"><div class="ml">잔고 증감</div><div class="mv ${diff>=0?'g':'r'}">${diff>=0?'+':''}${fmt(diff)}</div></div>
+    <div class="metric"><div class="ml">분석 월수</div><div class="mv b">${M.length}개월</div></div>
+  </div>
+  <div class="card">
+    <table class="ct">
+      <thead><tr><th>항목</th>${M.map(m=>`<th>${MN[m]}</th>`).join('')}</tr></thead>
+      <tbody>
+        <tr><td>총 매출</td>${M.map(m=>`<td style="color:var(--green);font-weight:600">${fmt(R[m].totalRev)}</td>`).join('')}</tr>
+        <tr class="sub"><td>ㄴ 카드정산</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].cardRev)}</td>`).join('')}</tr>
+        <tr class="sub"><td>ㄴ 시루정산</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].siruRev)}</td>`).join('')}</tr>
+        <tr class="sub"><td>ㄴ 현금회원권</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].cashMem)}</td>`).join('')}</tr>
+        <tr><td>총 고정비</td>${M.map(m=>`<td style="color:var(--red);font-weight:600">${fmt(R[m].totalFixed)}</td>`).join('')}</tr>
+        <tr><td>총 변동비</td>${M.map(m=>`<td style="color:var(--red)">${fmt(R[m].totalVar)}</td>`).join('')}</tr>
+        <tr><td>특수 지출</td>${M.map(m=>`<td style="color:var(--amber)">${fmt(R[m].totalSpecial)||'-'}</td>`).join('')}</tr>
+        <tr class="tot"><td>영업 이익</td>${M.map(m=>`<td>${fmt(R[m].opIncome)}</td>`).join('')}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cw" style="height:230px"><canvas id="chart-summary" role="img" aria-label="월별 손익 비교 차트"></canvas></div>`;
 }
 
-function renderRevenue(results, months, mn) {
-  let rows = `
-    <tr><td>카드정산</td>${months.map(m=>`<td style="color:var(--green)">${fmt(results[m].cardRev)}</td>`).join('')}</tr>
-    <tr><td>시루정산</td>${months.map(m=>`<td style="color:var(--green)">${fmt(results[m].siruRev)}</td>`).join('')}</tr>
-    <tr><td>현금 회원권</td>${months.map(m=>`<td style="color:var(--green)">${fmt(results[m].cashMem)}</td>`).join('')}</tr>
-    <tr><td>단기권</td>${months.map(m=>`<td style="color:var(--green)">${fmt(results[m].cashShort)}</td>`).join('')}</tr>
-    <tr><td>천원냉장고</td>${months.map(m=>`<td style="color:var(--text2)">${fmt(results[m].fridge)}</td>`).join('')}</tr>
-    <tr><td>기타</td>${months.map(m=>`<td style="color:var(--text2)">${fmt(results[m].etcRev)}</td>`).join('')}</tr>
-    <tr class="total"><td>합계</td>${months.map(m=>`<td>${fmt(results[m].totalRev)}</td>`).join('')}</tr>
-  `;
+function renderRevenue(R,M){
   return `
-    <div class="alert alert-info">시루 정산은 누적 후 일괄 이체 구조라 월별 편차가 큽니다.</div>
-    <div class="card">
-      <table class="compare-table">
-        <thead><tr><th>매출 구분</th>${months.map(m=>`<th>${mn[m]}</th>`).join('')}</tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <div class="chart-wrap" style="height:220px"><canvas id="chart-revenue"></canvas></div>
-  `;
+  <div class="alert ai">시루 정산은 누적 후 일괄 이체 구조라 월별 편차가 큽니다.</div>
+  <div class="alert as">현금 회원권은 꾸준히 증가 중 — 멤버십 기반 안정화 신호.</div>
+  <div class="card">
+    <table class="ct">
+      <thead><tr><th>매출 구분</th>${M.map(m=>`<th>${MN[m]}</th>`).join('')}</tr></thead>
+      <tbody>
+        <tr><td>카드정산</td>${M.map(m=>`<td style="color:var(--green)">${fmt(R[m].cardRev)}</td>`).join('')}</tr>
+        <tr><td>시루정산</td>${M.map(m=>`<td style="color:var(--green)">${fmt(R[m].siruRev)}</td>`).join('')}</tr>
+        <tr><td>현금 회원권</td>${M.map(m=>`<td style="color:var(--green)">${fmt(R[m].cashMem)}</td>`).join('')}</tr>
+        <tr><td>단기권</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].cashShort)}</td>`).join('')}</tr>
+        <tr><td>천원냉장고</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].fridge)}</td>`).join('')}</tr>
+        <tr><td>기타</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].etcRev)}</td>`).join('')}</tr>
+        <tr class="tot"><td>합계</td>${M.map(m=>`<td>${fmt(R[m].totalRev)}</td>`).join('')}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cw" style="height:210px"><canvas id="chart-revenue" role="img" aria-label="매출 구성 스택 차트"></canvas></div>`;
 }
 
-function renderFixed(results, months, mn) {
-  const fixed = [
-    {name:'임대료 (베니스)', bank:'법인', amt:'3,267,300', day:'월초/월말'},
-    {name:'임대 관리비', bank:'법인', amt:'965,260', day:'매월 20일'},
-    {name:'로몬 급여', bank:'개인', amt:'1,837,300', day:'매월 4일', hot:true},
-    {name:'이동신 급여 (디자인)', bank:'개인', amt:'1,000,000', day:'매월 3~4일'},
-    {name:'인테리어 할부', bank:'개인', amt:'1,500,000', day:'매월 5~8일', hot:true},
-    {name:'법인카드 결제', bank:'법인', amt:'~1,500,000', day:'매월 15일', hot:true},
-    {name:'텐텐마케팅', bank:'개인', amt:'1,300,000', day:'매월 중순'},
-    {name:'플레이스 상위노출', bank:'개인', amt:'600,000', day:'매월 초'},
-    {name:'에브리렌탈', bank:'법인', amt:'110,000', day:'매월 15일'},
-    {name:'코코렌탈', bank:'법인', amt:'55,000', day:'매월 26일'},
-    {name:'세무수수료', bank:'법인', amt:'165,000', day:'매월 28일'},
-    {name:'알고케어', bank:'법인', amt:'103,950', day:'매월 9일'},
-    {name:'LGU+ 통신비', bank:'법인', amt:'11,990', day:'매월 15일'},
-    {name:'아이샵케어', bank:'법인', amt:'17,600', day:'매월 6일'},
-    {name:'요가강사비', bank:'개인', amt:'변동', day:'매월 중'},
+function renderFixed(R,M){
+  const fixed=[
+    {name:'임대료 (베니스)',bank:'법인',amt:'3,267,300',day:'월초/월말',hot:true},
+    {name:'임대 관리비',bank:'법인',amt:'965,260',day:'매월 20일'},
+    {name:'로몬 급여',bank:'개인',amt:'1,837,300',day:'매월 4일',hot:true},
+    {name:'이동신 급여 (디자인)',bank:'개인',amt:'1,000,000',day:'매월 3~4일'},
+    {name:'인테리어 할부',bank:'개인',amt:'1,500,000',day:'매월 5~8일',hot:true},
+    {name:'법인카드 결제',bank:'법인',amt:'~1,500,000',day:'매월 15일',hot:true},
+    {name:'텐텐마케팅',bank:'개인',amt:'1,300,000',day:'매월 중순'},
+    {name:'플레이스 상위노출',bank:'개인',amt:'600,000',day:'매월 초'},
+    {name:'에브리렌탈',bank:'법인',amt:'110,000',day:'매월 15일'},
+    {name:'코코렌탈',bank:'법인',amt:'55,000',day:'매월 26일'},
+    {name:'세무수수료',bank:'법인',amt:'165,000',day:'매월 28일'},
+    {name:'알고케어',bank:'법인',amt:'103,950',day:'매월 9일'},
+    {name:'LGU+ 통신비',bank:'법인',amt:'11,990',day:'매월 15일'},
+    {name:'아이샵케어',bank:'법인',amt:'17,600',day:'매월 6일'},
+    {name:'요가강사비',bank:'개인',amt:'변동',day:'매월 중'},
+    {name:'김지훈 급여 (예정)',bank:'개인',amt:'~2,000,000',day:'매월',new:true},
   ];
-
-  const rows = fixed.map(f => `
-    <tr>
-      <td>${f.name}</td>
-      <td><span class="bdg ${f.bank==='법인'?'bdg-corp':'bdg-pers'}">${f.bank}</span></td>
-      <td class="amt">${f.amt}</td>
-      <td><span class="date-tag ${f.hot?'hot':''}">${f.day}</span></td>
-    </tr>
-  `).join('');
-
-  let compRows = `
-    <tr><td>법인 고정비</td>${months.map(m=>`<td style="color:var(--red)">${fmt(results[m].fixedCorp)}</td>`).join('')}</tr>
-    <tr><td>개인 고정비</td>${months.map(m=>`<td style="color:var(--red)">${fmt(results[m].fixedPers)}</td>`).join('')}</tr>
-    <tr class="total"><td>합계</td>${months.map(m=>`<td>${fmt(results[m].totalFixed)}</td>`).join('')}</tr>
-  `;
-
   return `
-    <div class="alert alert-warn">현행 합계 약 11,433,400원 (요가 제외). 김지훈 급여 추가 시 약 13,433,400원.</div>
-    <div class="card">
-      <table class="fixed-table">
-        <thead><tr><th>항목</th><th>통장</th><th>월 금액</th><th>출금일</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <p class="sec">월별 고정비 실적</p>
-    <div class="card">
-      <table class="compare-table">
-        <thead><tr><th>구분</th>${months.map(m=>`<th>${mn[m]}</th>`).join('')}</tr></thead>
-        <tbody>${compRows}</tbody>
-      </table>
-    </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="chart-fixed"></canvas></div>
-  `;
+  <div class="alert aw">현행 합계 약 11,433,400원 (요가 제외). 김지훈 급여 추가 시 약 13,433,400원.</div>
+  <div class="card">
+    <table class="ft">
+      <thead><tr><th>항목</th><th>통장</th><th style="text-align:right">월 금액</th><th>출금일</th></tr></thead>
+      <tbody>
+        ${fixed.map(f=>`<tr>
+          <td>${f.name}${f.new?`<span class="new-badge">예정</span>`:''}</td>
+          <td><span class="bdg ${f.bank==='법인'?'bc':'bp'}">${f.bank}</span></td>
+          <td class="amt">${f.amt}</td>
+          <td><span class="dtag ${f.hot?'hot':''}">${f.day}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div class="sec">월별 고정비 실적</div>
+  <div class="card">
+    <table class="ct">
+      <thead><tr><th>구분</th>${M.map(m=>`<th>${MN[m]}</th>`).join('')}</tr></thead>
+      <tbody>
+        <tr><td>법인 고정비</td>${M.map(m=>`<td style="color:var(--red)">${fmt(R[m].fixedCorp)}</td>`).join('')}</tr>
+        <tr><td>개인 고정비</td>${M.map(m=>`<td style="color:var(--red)">${fmt(R[m].fixedPers)}</td>`).join('')}</tr>
+        <tr class="tot"><td>합계</td>${M.map(m=>`<td>${fmt(R[m].totalFixed)}</td>`).join('')}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cw" style="height:190px"><canvas id="chart-fixed" role="img" aria-label="월별 고정비 차트"></canvas></div>`;
 }
 
-function renderMonthDetail(r, mn) {
-  const varBycat = {};
-  r.varItems.forEach(i => { (varBycat[i.cat]=varBycat[i.cat]||[]).push(i); });
-
-  let drillHTML = '';
-  Object.entries(varBycat).forEach(([cat, items]) => {
-    const catTotal = items.reduce((s,i)=>s+i.amt,0);
-    const col = CAT_COLORS[cat]||'#9ca3af';
-    const itemRows = items.map(i => `
-      <div class="drill-item">
-        <span class="drill-date">${i.date}</span>
-        <span class="drill-name">${i.name} ${i.memo?`<span style="color:var(--text3);font-size:10px">(${i.memo})</span>`:''}</span>
-        <span class="drill-bank ${i.bank==='법인'?'bdg-corp':'bdg-pers'}">${i.bank}</span>
-        <span class="drill-item-amt">${fmt(i.amt)}</span>
-      </div>`).join('');
-    drillHTML += `
-      <div class="drill-group">
-        <div class="drill-group-header">
-          <span class="drill-cat-label">
-            <span class="drill-cat-dot" style="background:${col}"></span>${cat}
-          </span>
-          <span class="drill-cat-total">${fmt(catTotal)}</span>
-        </div>
-        ${itemRows}
-      </div>`;
+function renderMonth(r, mn){
+  if(!r) return '<div class="alert aw">데이터가 없습니다.</div>';
+  const byCat={};
+  (r.varDetail||[]).forEach(i=>{(byCat[i.cat]=byCat[i.cat]||[]).push(i);});
+  let drillHTML='';
+  Object.entries(byCat).forEach(([cat,items])=>{
+    const total=items.reduce((s,i)=>s+i.amt,0);
+    const col=CCAT[cat]||'#9ca3af';
+    drillHTML+=`<div class="dg">
+      <div class="dgh"><span class="dgl"><span class="dgdot" style="background:${col}"></span>${cat}</span><span class="dgt">${fmt(total)}</span></div>
+      ${items.map(i=>`<div class="di">
+        <span class="ddate">${i.date}</span>
+        <span class="dname">${i.name}${i.memo?` <span style="color:var(--text3);font-size:10px">(${i.memo})</span>`:''}</span>
+        <span class="dbk ${i.bank==='법인'?'bc':'bp'}">${i.bank}</span>
+        <span class="damt">${fmt(i.amt)}</span>
+      </div>`).join('')}
+    </div>`;
   });
-
-  const totalVarAll = r.varItems.reduce((s,i)=>s+i.amt,0);
-  drillHTML += `<div class="drill-subtotal"><span>합계</span><span style="color:var(--red)">${fmt(totalVarAll)}원</span></div>`;
+  drillHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--red)">${fmt(r.totalVar)}원</span></div>`;
 
   return `
-    <div class="mg">
-      <div class="metric"><div class="metric-label">통합 월초잔고</div><div class="metric-value">${fmt(r.totalStart)}</div></div>
-      <div class="metric"><div class="metric-label">총 매출</div><div class="metric-value g">${fmt(r.totalRev)}</div></div>
-      <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value g">${fmt(r.opIncome)}</div></div>
-      <div class="metric"><div class="metric-label">통합 월말잔고</div><div class="metric-value ${r.totalEnd>=r.totalStart?'g':'r'}">${fmt(r.totalEnd)}</div></div>
+  <div class="mg">
+    <div class="metric"><div class="ml">통합 월초잔고</div><div class="mv">${fmt(r.totalStart)}</div></div>
+    <div class="metric"><div class="ml">총 매출</div><div class="mv g">${fmt(r.totalRev)}</div></div>
+    <div class="metric"><div class="ml">영업 이익</div><div class="mv g">${fmt(r.opIncome)}</div></div>
+    <div class="metric"><div class="ml">통합 월말잔고</div><div class="mv ${r.totalEnd>=r.totalStart?'g':'r'}">${fmt(r.totalEnd)}</div></div>
+  </div>
+  ${r.totalSpecial>0?`<div class="alert aw">특수 지출 ${fmt(r.totalSpecial)}원 발생 (잔고 영향, 영업이익 별도)</div>`:`<div class="alert as">이번 달 특수지출 없음 — 정상 운영 구조</div>`}
+  <div class="card">
+    <div class="row"><span class="rn">카드정산</span><span class="ra g">${fmt(r.cardRev)}</span></div>
+    <div class="row"><span class="rn">시루정산 (이기현)</span><span class="ra g">${fmt(r.siruRev)}</span></div>
+    <div class="row"><span class="rn">현금 회원권</span><span class="ra g">${fmt(r.cashMem)}</span></div>
+    <div class="row"><span class="rn">단기권</span><span class="ra g">${fmt(r.cashShort)}</span></div>
+    <div class="row"><span class="rn">천원냉장고</span><span class="ra g">${fmt(r.fridge)}</span></div>
+    <div class="row"><span class="rn">기타</span><span class="ra g">${fmt(r.etcRev)}</span></div>
+    <div class="row"><span class="rn">고정비</span><span class="ra r">${fmt(r.totalFixed)}</span></div>
+    ${(r.fixedDetail||[]).map(f=>`<div class="row sub"><span class="rn">${f.name} <span class="bdg ${f.bank.includes('법인')?'bc':'bp'}" style="font-size:9px">${f.bank}</span></span><span class="ra r" style="font-size:12px">${fmt(f.amt)}</span></div>`).join('')}
+    <div class="row clk" data-drill="${r.month}-var">
+      <span class="rn">변동 사업비 <span class="earr" id="earr-${r.month}-var">▼</span></span>
+      <span class="ra r">${fmt(r.totalVar)}</span>
     </div>
-    ${r.totalSpecial > 0 ? `<div class="alert alert-warn">특수 지출 ${fmt(r.totalSpecial)}원 발생 (잔고에 영향, 영업이익 별도)</div>` : '<div class="alert alert-success">이번 달 특수지출 없음 — 정상 운영 구조</div>'}
-    <div class="card">
-      <div class="row"><span class="row-name">카드정산</span><span class="row-amt g">${fmt(r.cardRev)}</span></div>
-      <div class="row"><span class="row-name">시루정산 (이기현)</span><span class="row-amt g">${fmt(r.siruRev)}</span></div>
-      <div class="row"><span class="row-name">현금 회원권</span><span class="row-amt g">${fmt(r.cashMem)}</span></div>
-      <div class="row"><span class="row-name">단기권</span><span class="row-amt g">${fmt(r.cashShort)}</span></div>
-      <div class="row"><span class="row-name">천원냉장고</span><span class="row-amt g">${fmt(r.fridge)}</span></div>
-      <div class="row"><span class="row-name">기타</span><span class="row-amt g">${fmt(r.etcRev)}</span></div>
-      <div class="row"><span class="row-name">고정비</span><span class="row-amt r">${fmt(r.totalFixed)}</span></div>
-      ${r.fixedDetail.map(f=>`
-        <div class="row sub"><span class="row-name">${f.name} <span class="bdg ${f.bank==='법인'?'bdg-corp':'bdg-pers'}" style="font-size:9px">${f.bank}</span></span><span class="row-amt r" style="font-size:12px">${fmt(f.amt)}</span></div>
-      `).join('')}
-      <div class="row clickable" data-drill="${r.month}-var">
-        <span class="row-name">변동 사업비 <span class="expand-arrow" id="icon-${r.month}-var">▼</span></span>
-        <span class="row-amt r">${fmt(r.totalVar)}</span>
-      </div>
-      <div class="drill" id="drill-${r.month}-var">${drillHTML}</div>
-      ${r.totalSpecial > 0 ? `<div class="row"><span class="row-name" style="color:var(--amber)">특수 지출</span><span class="row-amt o">${fmt(r.totalSpecial)}</span></div>` : ''}
-      <div class="row total"><span class="row-name">영업 이익</span><span class="row-amt g">${fmt(r.opIncome)}</span></div>
-    </div>
-  `;
+    <div class="drill" id="drill-${r.month}-var">${drillHTML}</div>
+    ${r.totalSpecial>0?`<div class="row"><span class="rn" style="color:var(--amber)">특수 지출</span><span class="ra o">${fmt(r.totalSpecial)}</span></div>`:''}
+    <div class="row tot"><span class="rn">영업 이익</span><span class="ra g">${fmt(r.opIncome)}</span></div>
+  </div>`;
 }
 
 // ============================================================
 // 차트
 // ============================================================
-const isDark = true;
-const tc = 'rgba(255,255,255,0.4)';
-const gc = 'rgba(255,255,255,0.06)';
-
-function drawSummaryChart(results, months, mn) {
-  const ctx = document.getElementById('chart-summary');
-  if (!ctx) return;
-  charts['summary'] = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels: months.map(m=>mn[m]),
-      datasets:[
-        {label:'총 매출', data:months.map(m=>results[m].totalRev), backgroundColor:'#2ecc71', borderRadius:4, borderSkipped:false},
-        {label:'고정비', data:months.map(m=>results[m].totalFixed), backgroundColor:'#e74c3c', borderRadius:4, borderSkipped:false},
-        {label:'영업이익', data:months.map(m=>results[m].opIncome), backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},
-      scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}
-  });
+function drawCharts(key, R, M){
+  if(key==='summary'){
+    const ctx=document.getElementById('chart-summary');
+    if(!ctx)return;
+    charts.summary=new Chart(ctx,{type:'bar',data:{labels:M.map(m=>MN[m]),datasets:[
+      {label:'총 매출',data:M.map(m=>R[m].totalRev),backgroundColor:'#2ecc71',borderRadius:4,borderSkipped:false},
+      {label:'고정비',data:M.map(m=>R[m].totalFixed),backgroundColor:'#e74c3c',borderRadius:4,borderSkipped:false},
+      {label:'영업이익',data:M.map(m=>R[m].opIncome),backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}});
+  }
+  if(key==='revenue'){
+    const ctx=document.getElementById('chart-revenue');
+    if(!ctx)return;
+    charts.revenue=new Chart(ctx,{type:'bar',data:{labels:M.map(m=>MN[m]),datasets:[
+      {label:'카드정산',data:M.map(m=>R[m].cardRev),backgroundColor:'#2ecc71',borderRadius:3,borderSkipped:false},
+      {label:'시루정산',data:M.map(m=>R[m].siruRev),backgroundColor:'#3b82f6',borderRadius:3,borderSkipped:false},
+      {label:'현금회원권',data:M.map(m=>R[m].cashMem),backgroundColor:'#8b5cf6',borderRadius:3,borderSkipped:false},
+      {label:'기타',data:M.map(m=>R[m].cashShort+R[m].fridge+R[m].etcRev),backgroundColor:'#6b7280',borderRadius:3,borderSkipped:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},scales:{x:{stacked:true,ticks:{color:tc},grid:{color:gc}},y:{stacked:true,ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}});
+  }
+  if(key==='fixed'){
+    const ctx=document.getElementById('chart-fixed');
+    if(!ctx)return;
+    charts.fixed=new Chart(ctx,{type:'bar',data:{labels:M.map(m=>MN[m]),datasets:[
+      {label:'법인 고정비',data:M.map(m=>R[m].fixedCorp),backgroundColor:'#3b82f6',borderRadius:3,borderSkipped:false},
+      {label:'개인 고정비',data:M.map(m=>R[m].fixedPers),backgroundColor:'#8b5cf6',borderRadius:3,borderSkipped:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},scales:{x:{stacked:true,ticks:{color:tc},grid:{color:gc}},y:{stacked:true,ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}});
+  }
 }
 
-function drawRevenueChart(results, months, mn) {
-  const ctx = document.getElementById('chart-revenue');
-  if (!ctx) return;
-  charts['revenue'] = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels: months.map(m=>mn[m]),
-      datasets:[
-        {label:'카드정산', data:months.map(m=>results[m].cardRev), backgroundColor:'#2ecc71', borderRadius:3, borderSkipped:false},
-        {label:'시루정산', data:months.map(m=>results[m].siruRev), backgroundColor:'#3b82f6', borderRadius:3, borderSkipped:false},
-        {label:'현금회원권', data:months.map(m=>results[m].cashMem), backgroundColor:'#8b5cf6', borderRadius:3, borderSkipped:false},
-        {label:'기타', data:months.map(m=>results[m].cashShort+results[m].fridge+results[m].etcRev), backgroundColor:'#6b7280', borderRadius:3, borderSkipped:false},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},
-      scales:{x:{stacked:true,ticks:{color:tc},grid:{color:gc}},y:{stacked:true,ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}
-  });
+// ============================================================
+// 새 달 분석 (업로드)
+// ============================================================
+let files={corp:null,pers:null}, newResults={}, newMonths=[];
+
+function hFile(e,t){const f=e.target.files[0];if(!f)return;files[t]=f;document.getElementById(t+'-fn').textContent=f.name;document.getElementById(t+'-box').classList.add('done');chkReady();}
+function hDrag(e,t){e.preventDefault();document.getElementById(t+'-box').classList.add('over');}
+function hDragL(e,t){document.getElementById(t+'-box').classList.remove('over');}
+function hDrop(e,t){e.preventDefault();document.getElementById(t+'-box').classList.remove('over');const f=e.dataTransfer.files[0];if(!f)return;files[t]=f;document.getElementById(t+'-fn').textContent=f.name;document.getElementById(t+'-box').classList.add('done');chkReady();}
+function chkReady(){document.getElementById('abtn').disabled=!(files.corp&&files.pers);}
+
+// 분류 룰
+const CR_IN=[
+  {keys:['주식회사 9052','토스매출'],cat:'매출_카드정산'},{keys:['쿠팡매출'],cat:'매출_온라인(쿠팡)'},
+  {keys:['이기현'],cat:'매출_시루정산'},{keys:['추윤호','조희설'],cat:'내부_가지급금'},
+  {keys:['금강석'],cat:'내부이체_개→법'},{keys:['시흥세무서'],cat:'기타수입'},
+];
+const CR_OUT=[
+  {keys:['050.베니스 월'],cat:'고정비_임대료'},
+  {fn:r=>r.name.includes('배곧베니스')&&r.out>=500000,cat:'고정비_임대관리비'},
+  {fn:r=>r.name.includes('배곧베니스')&&r.out<500000,cat:'고정비_임대기타'},
+  {keys:['신한카드법인','아마존카'],cat:'고정비_법인카드결제'},{keys:['에브리렌탈'],cat:'고정비_렌탈'},
+  {keys:['코코렌탈'],cat:'고정비_렌탈'},{keys:['LGU+'],cat:'고정비_통신비'},
+  {keys:['아이샵케어'],cat:'고정비_기타'},{keys:['대성세무회계'],cat:'고정비_세무수수료'},
+  {keys:['알고케어'],cat:'고정비_알고케어'},{keys:['신지원','아브뉴'],cat:'특수_구사무실'},
+  {keys:['홍성미','텐텐마케팅','김혜련'],cat:'고정비_마케팅(텐텐)'},
+  {keys:['플레이스'],cat:'고정비_마케팅(플레이스)'},
+  {keys:['레뷰','네이버광고','네이버 9052','애드피아','백주현','종이족자','포스터','전단지','에어간판','현수막','시트지','성은선'],cat:'변동_마케팅'},
+  {keys:['음료구매','씨유','모박사','닭가슴살','쿠팡'],cat:'변동_소모품'},
+  {keys:['김대성','이센셜'],cat:'변동_장비(심박수)'},
+  {fn:r=>r.name.includes('Npay')&&r.out>1000000,cat:'변동_기자재'},
+  {keys:['트레드밀','철봉'],cat:'변동_기자재'},
+  {keys:['주식회사 9052'],cat:'내부이체_법→개'},{keys:['이기현'],cat:'특수_투자회수'},
+  {keys:['안용식'],cat:'특수_세무조정'},{keys:['신지원','아브뉴','관리비 12,1'],cat:'특수_구사무실'},
+];
+const PR_IN=[
+  {fn:r=>r.amt<=2,cat:'기타_소액'},{fn:r=>r.amt<=3000,cat:'매출_천원냉장고'},
+  {keys:['이기현'],cat:'매출_시루정산'},{keys:['입출금통장 이자','예금이자'],cat:'기타_이자'},
+  {keys:['의류판매'],cat:'매출_온라인(의류)'},{fn:r=>r.amt===5000,cat:'매출_소액기타'},
+  {fn:r=>[88400,66700,50900].includes(r.amt),cat:'엠티_참가비'},
+  {keys:['금강석'],cat:'내부이체_법→개'},
+  {fn:r=>[10000,15000,20000,25000,28000,30000,56000,60000,80000].includes(r.amt),cat:'매출_단기권'},
+];
+const PR_OUT=[
+  {fn:r=>r.name.includes('월세')&&r.amt>2000000,cat:'특수_구월세'},
+  {keys:['인테리어할부'],cat:'고정비_인테리어할부'},{keys:['이동신'],cat:'고정비_인건비(이동신)'},
+  {keys:['전유진','요가 급여'],cat:'고정비_인건비(요가)'},{keys:['로몬'],cat:'고정비_인건비(로몬)'},
+  {keys:['텐텐마케팅','김혜련'],cat:'고정비_마케팅(텐텐)'},
+  {keys:['플레이스'],cat:'고정비_마케팅(플레이스)'},
+  {keys:['네이버광고','네이버 9052','전단지','백주현','포스터','시트지','에어간판','현수막','애드피아','성은선'],cat:'변동_마케팅'},
+  {keys:['법인으로'],cat:'내부이체_개→법'},{keys:['트레드밀','철봉'],cat:'변동_기자재'},
+  {keys:['이명환','굿즈 티셔츠','하이록스 티셔츠'],cat:'특수_굿즈제작'},
+  {keys:['잔디 롤매트'],cat:'특수_시설'},{keys:['회식비'],cat:'특수_이벤트'},
+  {keys:['펜션','황태','샤브','닭갈비','좋은날','방이'],cat:'엠티_지출'},
+  {keys:['쿠팡','씨유','닭가슴살','세탁비','음료구매','고무판','모래주머니','손목거치대','프린트카페'],cat:'변동_소모품'},
+  {keys:['이사 보증금','폐기물처리비'],cat:'특수_이사'},
+  {fn:r=>r.name.includes('이사')&&r.amt>=400000,cat:'특수_이사'},
+  {keys:['남기표'],cat:'변동_시설'},{keys:['화환'],cat:'변동_관계비'},
+];
+
+function clsCI(n,m,a){for(const r of CR_IN){if(r.fn&&r.fn({name:n,memo:m,amt:a}))return r.cat;if(r.keys&&r.keys.some(k=>n.includes(k)))return r.cat;}return '매출_기타';}
+function clsCO(n,m,a){for(const r of CR_OUT){if(r.fn&&r.fn({name:n,memo:m,out:a}))return r.cat;if(r.memo&&r.keys&&r.keys.some(k=>(m||'').includes(k)))return r.cat;if(!r.memo&&r.keys&&r.keys.some(k=>n.includes(k)))return r.cat;}return '지출_기타';}
+function clsPI(n,m,a){for(const r of PR_IN){if(r.fn&&r.fn({name:n,memo:m,amt:a}))return r.cat;if(r.keys&&r.keys.some(k=>n.includes(k)))return r.cat;}return '매출_회원권';}
+function clsPO(n,m,a){for(const r of PR_OUT){if(r.fn&&r.fn({name:n,memo:m,amt:a}))return r.cat;if(r.keys&&r.keys.some(k=>n.includes(k)))return r.cat;}return '변동_기타';}
+
+function readXlsx(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array'});const s={};wb.SheetNames.forEach(n=>{s[n]=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''});});res(s);}catch(err){rej(err);}};r.onerror=rej;r.readAsArrayBuffer(f);});}
+
+function parseCorpSheet(rows){
+  const tx=[];
+  for(const row of rows){
+    const ds=String(row[2]||'');
+    if(!ds.match(/^\d{4}\.\d{2}\.\d{2}/))continue;
+    const date=ds.substring(0,10).replace(/\./g,'-');
+    const name=String(row[6]||'').trim();
+    const memo=String(row[10]||row[11]||'').trim();
+    const inA=parseFloat(String(row[4]).replace(/,/g,''))||0;
+    const outA=parseFloat(String(row[5]).replace(/,/g,''))||0;
+    const bal=parseFloat(String(row[7]).replace(/,/g,''))||0;
+    if(!name||(inA===0&&outA===0))continue;
+    const cat=inA>0?clsCI(name,memo,inA):clsCO(name,memo,outA);
+    tx.push({date,name,memo,in:inA,out:outA,bal,cat,src:'법인'});
+  }
+  return tx.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-function drawFixedChart(results, months, mn) {
-  const ctx = document.getElementById('chart-fixed');
-  if (!ctx) return;
-  charts['fixed'] = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels: months.map(m=>mn[m]),
-      datasets:[
-        {label:'법인 고정비', data:months.map(m=>results[m].fixedCorp), backgroundColor:'#3b82f6', borderRadius:3, borderSkipped:false},
-        {label:'개인 고정비', data:months.map(m=>results[m].fixedPers), backgroundColor:'#8b5cf6', borderRadius:3, borderSkipped:false},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw.toLocaleString()+'원'}}},
-      scales:{x:{stacked:true,ticks:{color:tc},grid:{color:gc}},y:{stacked:true,ticks:{color:tc,callback:v=>(v/10000).toFixed(0)+'만'},grid:{color:gc}}}}
-  });
+function parsePersSheet(rows){
+  let hi=-1;
+  for(let i=0;i<rows.length;i++){if(rows[i].some(c=>String(c).includes('거래일시'))){hi=i;break;}}
+  if(hi<0)throw new Error('개인 내역 헤더를 찾을 수 없습니다.');
+  const tx=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const row=rows[i];
+    const ds=String(row[1]||'').trim();
+    if(!ds.match(/^\d{4}\.\d{2}\.\d{2}/))continue;
+    const type=String(row[2]||'').trim();
+    if(!['입금','출금'].includes(type))continue;
+    const date=ds.substring(0,10).replace(/\./g,'-');
+    const amt=Math.abs(parseFloat(String(row[3]).replace(/,/g,''))||0);
+    const name=String(row[6]||'').trim();
+    const memo=String(row[7]||'').trim();
+    const bal=parseFloat(String(row[4]).replace(/,/g,''))||0;
+    if(!name||amt===0)continue;
+    const cat=type==='입금'?clsPI(name,memo,amt):clsPO(name,memo,amt);
+    tx.push({date,name,memo,type,amt,bal,cat,src:'개인'});
+  }
+  return tx.sort((a,b)=>a.date.localeCompare(b.date));
 }
+
+function getMonth(d){return parseInt(d.substring(5,7));}
+
+const FIXED_C=['고정비_임대료','고정비_임대관리비','고정비_법인카드결제','고정비_렌탈','고정비_통신비','고정비_세무수수료','고정비_기타','고정비_알고케어','고정비_마케팅(텐텐)','고정비_알바비'];
+const FIXED_P=['고정비_인건비(이동신)','고정비_인건비(요가)','고정비_인건비(로몬)','고정비_인테리어할부','고정비_마케팅(플레이스)','고정비_마케팅(텐텐)'];
+const REV_C=['매출_카드정산','매출_온라인(쿠팡)'];
+const REV_P=['매출_회원권','매출_단기권','매출_시루정산','매출_천원냉장고','매출_소액기타','매출_온라인(의류)','매출_기타'];
+
+function calcMonth(cTx,pTx,m){
+  const cm=cTx.filter(t=>getMonth(t.date)===m);
+  const pm=pTx.filter(t=>getMonth(t.date)===m);
+  let cs=0,ce=0,ps=0,pe=0;
+  if(cm.length){const f=cm[0];cs=f.in>0?f.bal-f.in:f.bal+f.out;ce=cm[cm.length-1].bal;}
+  if(pm.length){const f=pm[0];ps=f.type==='출금'?f.bal+f.amt:f.bal-f.amt;pe=pm[pm.length-1].bal;}
+  const cr=cm.filter(t=>REV_C.includes(t.cat)).reduce((s,t)=>s+t.in,0);
+  const pr=pm.filter(t=>t.type==='입금'&&REV_P.includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+  const fc=cm.filter(t=>FIXED_C.includes(t.cat)).reduce((s,t)=>s+t.out,0);
+  const fp=pm.filter(t=>t.type==='출금'&&FIXED_P.includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+  const vc=cm.filter(t=>t.cat.startsWith('변동_')).reduce((s,t)=>s+t.out,0);
+  const vp=pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).reduce((s,t)=>s+t.amt,0);
+  const spC=cm.filter(t=>t.cat.startsWith('특수_')).reduce((s,t)=>s+t.out,0);
+  const spP=pm.filter(t=>t.type==='출금'&&t.cat.startsWith('특수_')).reduce((s,t)=>s+t.amt,0);
+  const varItems=[];
+  cm.filter(t=>t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.out,bank:'법인',memo:t.memo}));
+  pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.amt,bank:'개인',memo:t.memo}));
+  varItems.sort((a,b)=>a.date.localeCompare(b.date));
+  const fixedDetail=[];
+  cm.filter(t=>FIXED_C.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.out,bank:'법인'}));
+  pm.filter(t=>t.type==='출금'&&FIXED_P.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.amt,bank:'개인'}));
+  return {
+    month:m,corpStart:cs,corpEnd:ce,persStart:ps,persEnd:pe,totalStart:cs+ps,totalEnd:ce+pe,
+    totalRev:cr+pr,cardRev:cm.filter(t=>t.cat==='매출_카드정산').reduce((s,t)=>s+t.in,0),
+    siruRev:pm.filter(t=>t.type==='입금'&&t.cat==='매출_시루정산').reduce((s,t)=>s+t.amt,0),
+    cashMem:pm.filter(t=>t.type==='입금'&&t.cat==='매출_회원권').reduce((s,t)=>s+t.amt,0),
+    cashShort:pm.filter(t=>t.type==='입금'&&t.cat==='매출_단기권').reduce((s,t)=>s+t.amt,0),
+    fridge:pm.filter(t=>t.type==='입금'&&t.cat==='매출_천원냉장고').reduce((s,t)=>s+t.amt,0),
+    etcRev:pm.filter(t=>t.type==='입금'&&['매출_온라인(의류)','매출_소액기타','매출_기타'].includes(t.cat)).reduce((s,t)=>s+t.amt,0),
+    totalFixed:fc+fp,fixedCorp:fc,fixedPers:fp,totalVar:vc+vp,varCorp:vc,varPers:vp,
+    totalSpecial:spC+spP,opIncome:(cr+pr)-(fc+fp)-(vc+vp),
+    varDetail:varItems,fixedDetail
+  };
+}
+
+async function analyze(){
+  document.getElementById('errmsg').style.display='none';
+  document.getElementById('upload-wrap').style.display='none';
+  document.getElementById('loading').style.display='block';
+  try{
+    const [cS,pS]=await Promise.all([readXlsx(files.corp),readXlsx(files.pers)]);
+    const cTx=parseCorpSheet(Object.values(cS)[0]);
+    const pTx=parsePersSheet(Object.values(pS)[0]);
+    const months=[...new Set([...cTx,...pTx].map(t=>getMonth(t.date)))].sort();
+    newMonths=months;
+    months.forEach(m=>{newResults[m]=calcMonth(cTx,pTx,m);});
+    document.getElementById('loading').style.display='none';
+    document.getElementById('dash-new').style.display='block';
+    const yr=cTx[0]?.date.substring(0,4)||new Date().getFullYear();
+    document.getElementById('hbadge').textContent=`${yr}년 ${months[0]}~${months[months.length-1]}월`;
+    renderDash('new',newResults,newMonths);
+  }catch(err){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('upload-wrap').style.display='block';
+    const em=document.getElementById('errmsg');
+    em.textContent='오류: '+err.message;em.style.display='block';
+  }
+}
+
+// 초기 렌더링
+renderDash('saved', SAVED.results, SAVED.months);
 </script>
 </body>
 </html>
