@@ -7,33 +7,33 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--bg:#f8f9fa;--bg2:#ffffff;--bg3:#f1f3f5;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);--text:#1a1a1a;--text2:#666;--text3:#aaa;--green:#16a34a;--red:#dc2626;--blue:#2563eb;--amber:#d97706;--purple:#7c3aed;--r:10px;--rs:6px}
+:root{--bg:#f7f8fb;--bg2:#ffffff;--bg3:#f1f5f9;--border:rgba(15,23,42,0.09);--border2:rgba(15,23,42,0.16);--text:#111827;--text2:#475569;--text3:#94a3b8;--green:#16a34a;--red:#dc2626;--blue:#2563eb;--amber:#d97706;--purple:#7c3aed;--r:14px;--rs:9px;--shadow:0 10px 30px rgba(15,23,42,.06)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh}
+body{background:linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);color:var(--text);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh}
 /* 최상단 모드 탭 */
-.mode-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.mode-bar{display:flex;background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);box-shadow:0 2px 12px rgba(15,23,42,.04);position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}
 .mode-tab{flex:1;padding:14px;text-align:center;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;border-bottom:3px solid transparent}
-.mode-tab.on{color:var(--green);border-bottom-color:var(--green);background:rgba(46,204,113,.05)}
+.mode-tab.on{color:var(--green);border-bottom-color:var(--green);background:rgba(22,163,74,.08)}
 /* 헤더 */
-.header{padding:18px 28px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.header{padding:20px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fff}
 .logo{font-size:17px;font-weight:700;letter-spacing:.08em}.logo span{color:var(--green)}
-.hbadge{font-size:12px;color:var(--text2);background:var(--bg2);padding:5px 12px;border-radius:100px;border:1px solid var(--border)}
+.hbadge{font-size:12px;color:var(--text2);background:var(--bg3);padding:6px 13px;border-radius:100px;border:1px solid var(--border);font-weight:600}
 /* 업로드 */
 .upload-wrap{padding:36px 28px}
 .upload-title{font-size:20px;font-weight:600;margin-bottom:6px}
 .upload-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:640px}
-.ubox{border:1.5px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
-.ubox:hover,.ubox.over{border-color:var(--green);background:rgba(46,204,113,.06)}
-.ubox.done{border-color:var(--green);border-style:solid;background:rgba(46,204,113,.08)}
+.ubox{border:1.5px dashed var(--border2);border-radius:var(--r);padding:26px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:#fff;box-shadow:var(--shadow)}
+.ubox:hover,.ubox.over{border-color:var(--green);background:rgba(22,163,74,.06);transform:translateY(-1px)}
+.ubox.done{border-color:var(--green);border-style:solid;background:rgba(22,163,74,.08)}
 .ubox input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .uicon{font-size:26px;margin-bottom:8px}
 .ulabel{font-size:13px;font-weight:600;margin-bottom:3px}
 .uhint{font-size:11px;color:var(--text3)}
 .ufname{font-size:11px;color:var(--green);margin-top:6px;font-weight:500}
-.abtn{margin-top:18px;background:var(--green);color:#000;font-size:14px;font-weight:700;padding:12px 36px;border:none;border-radius:var(--rs);cursor:pointer;letter-spacing:.04em;transition:opacity .2s}
+.abtn{margin-top:18px;background:var(--green);color:#fff;font-size:14px;font-weight:800;padding:13px 38px;border:none;border-radius:var(--rs);cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 8px 18px rgba(22,163,74,.18)}
 .abtn:disabled{opacity:.3;cursor:not-allowed}
-.abtn:not(:disabled):hover{opacity:.85}
+.abtn:not(:disabled):hover{opacity:.95;transform:translateY(-1px)}
 .errmsg{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.3);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:#f87171;margin-top:14px;display:none}
 /* 로딩 */
 .loading{display:none;text-align:center;padding:60px}
@@ -43,38 +43,38 @@ body{background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','N
 .dash{display:none;padding:0 28px 48px}
 .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;padding-top:16px;overflow-x:auto}
 .tab{padding:9px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s}
-.tab.on{color:var(--text);border-bottom-color:var(--green);font-weight:600}
+.tab.on{color:var(--green);border-bottom-color:var(--green);font-weight:800;background:rgba(22,163,74,.06)}
 .mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
-.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.metric{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
 .ml{font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
 .mv{font-size:19px;font-weight:700}
 .mv.g{color:var(--green)}.mv.r{color:var(--red)}.mv.b{color:var(--blue)}.mv.o{color:var(--amber)}
 .ms{font-size:11px;color:var(--text3);margin-top:3px}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:12px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
 .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
 .row:last-child{border-bottom:none}
 .row.sub{padding-left:14px}
 .row.sub .rn{font-size:12px;color:var(--text2)}
 .row.tot{border-top:1px solid var(--border2);padding-top:10px;margin-top:3px;font-weight:700;border-bottom:none}
-.row.clk{cursor:pointer;border-radius:var(--rs);transition:background .15s}
-.row.clk:hover{background:rgba(255,255,255,.04);margin:0 -6px;padding-left:6px;padding-right:6px}
+.row.clk{cursor:pointer;border-radius:var(--rs);transition:background .15s;user-select:none}
+.row.clk:hover{background:rgba(15,23,42,.04);margin:0 -6px;padding-left:6px;padding-right:6px}
 .rn{flex:2;min-width:0}
 .ra{font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ra.g{color:var(--green)}.ra.r{color:var(--red)}.ra.n{color:var(--text2)}.ra.b{color:var(--blue)}.ra.o{color:var(--amber)}
 .bdg{display:inline-block;font-size:10px;padding:1px 6px;border-radius:100px;margin:0 4px}
-.bc{background:rgba(59,130,246,.2);color:#7bb3ff}
-.bp{background:rgba(46,204,113,.15);color:#6fe0a0}
+.bc{background:rgba(37,99,235,.12);color:#1d4ed8}
+.bp{background:rgba(22,163,74,.12);color:#15803d}
 .dtag{font-size:11px;padding:2px 7px;border-radius:100px;background:var(--bg3);color:var(--text2);white-space:nowrap}
-.dtag.hot{background:rgba(245,158,11,.15);color:#fbbf24}
+.dtag.hot{background:rgba(217,119,6,.12);color:#b45309}
 /* 드릴다운 */
-.drill{display:none;background:var(--bg3);border-radius:var(--rs);padding:10px 12px;margin:3px 0 6px}
+.drill{display:none;background:#f8fafc;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin:6px 0 8px}
 .drill.open{display:block}
 .dg{margin-bottom:8px}
 .dgh{display:flex;justify-content:space-between;padding:2px 0 5px;border-bottom:1px solid var(--border);margin-bottom:3px}
 .dgl{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
 .dgdot{width:6px;height:6px;border-radius:50%}
 .dgt{font-size:12px;font-weight:700}
-.di{display:flex;align-items:center;padding:3px 0;font-size:12px;gap:5px;border-bottom:1px solid rgba(255,255,255,.04)}
+.di{display:flex;align-items:center;padding:5px 0;font-size:12px;gap:6px;border-bottom:1px solid rgba(15,23,42,.06)}
 .di:last-child{border-bottom:none}
 .ddate{color:var(--text3);min-width:38px;font-size:11px}
 .dname{color:var(--text2);flex:1}
@@ -85,9 +85,9 @@ body{background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','N
 .earr.open{transform:rotate(180deg)}
 /* 알림 */
 .alert{border-radius:var(--rs);padding:9px 12px;margin-bottom:12px;font-size:12px;line-height:1.6}
-.ai{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
-.aw{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fcd34d}
-.as{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#6ee7b7}
+.ai{background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.22);color:#1d4ed8}
+.aw{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.24);color:#b45309}
+.as{background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.24);color:#15803d}
 .sec{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin:18px 0 8px}
 /* 비교테이블 */
 .ct{width:100%;border-collapse:collapse;font-size:13px}
@@ -104,7 +104,14 @@ body{background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','N
 .ft tr:last-child td{border-bottom:none}
 .ft .amt{text-align:right;font-variant-numeric:tabular-nums;color:var(--red);font-weight:600}
 .cw{position:relative;width:100%;margin-top:6px}
-.new-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(46,204,113,.15);color:var(--green);margin-left:6px;vertical-align:middle}
+.new-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,.12);color:var(--green);margin-left:6px;vertical-align:middle;font-weight:700}
+
+/* Light UI visibility upgrades */
+.ct th,.ft th{background:#f8fafc;color:#64748b}
+.ct tr:hover td,.ft tr:hover td{background:#fbfdff}
+.tabs{background:#fff;border-radius:var(--r) var(--r) 0 0;padding-left:4px;padding-right:4px}
+.cw{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow)}
+.logo span{color:var(--green)}
 </style>
 </head>
 <body>
@@ -188,6 +195,15 @@ const SAVED = {
         {date:'03/30',name:'애드피아몰',cat:'마케팅',amt:16250,bank:'법인',memo:''},
         {date:'03/18',name:'음료구매 (쿠팡)',cat:'소모품',amt:27530,bank:'법인',memo:''},
         {date:'03/20',name:'KIM OLEG 택배',cat:'소모품',amt:12000,bank:'법인',memo:'한진착불'},
+      ],
+      specialDetail:[
+        {date:'03/02',name:'월세',cat:'구월세',amt:3267000,bank:'개인',memo:''},
+        {date:'03/04',name:'관리비 12,1',cat:'구사무실',amt:589740,bank:'법인',memo:''},
+        {date:'03/09',name:'아브뉴월세',cat:'구사무실',amt:550000,bank:'법인',memo:''},
+        {date:'03/24',name:'이사 보증금',cat:'이사',amt:50000,bank:'개인',memo:''},
+        {date:'03/26',name:'이사',cat:'이사',amt:480000,bank:'개인',memo:''},
+        {date:'03/27',name:'폐기물처리비',cat:'이사',amt:86000,bank:'개인',memo:''},
+        {date:'03/31',name:'신지원',cat:'구사무실',amt:550000,bank:'법인',memo:''},
       ]
     },
     4:{month:4,corpStart:7438552,corpEnd:1765026,persStart:4028774,persEnd:5838270,totalStart:11467326,totalEnd:7603296,totalRev:24792256,cardRev:10814840,siruRev:9162800,cashMem:4597000,cashShort:178000,fridge:29616,etcRev:10000,fixedCorp:8577821,fixedPers:4905000,totalFixed:13482821,varCorp:1837780,varPers:3770420,totalVar:5608200,totalSpecial:9132205,opIncome:5701235,
@@ -236,10 +252,21 @@ const SAVED = {
         {date:'04/28',name:'광릉불고기',cat:'식비',amt:70000,bank:'개인',memo:''},
         {date:'04/30',name:'삼시세끼',cat:'식비',amt:21900,bank:'개인',memo:''},
         {date:'04/24',name:'남스짐 화환',cat:'관계비',amt:85000,bank:'개인',memo:''},
+      ],
+      specialDetail:[
+        {date:'04/01',name:'이기현',cat:'투자회수',amt:4400000,bank:'법인',memo:''},
+        {date:'04/02',name:'배곧아브뉴프랑',cat:'구사무실',amt:636290,bank:'법인',memo:''},
+        {date:'04/05',name:'안용식(대성)',cat:'세무조정',amt:1035415,bank:'법인',memo:''},
+        {date:'04/07',name:'굿즈 티셔츠',cat:'굿즈제작',amt:1425500,bank:'개인',memo:''},
+        {date:'04/19',name:'회식비',cat:'이벤트',amt:325000,bank:'개인',memo:''},
+        {date:'04/20',name:'잔디 롤매트',cat:'시설',amt:660000,bank:'개인',memo:''},
+        {date:'04/22',name:'하이록스 티셔츠',cat:'굿즈제작',amt:65000,bank:'개인',memo:''},
+        {date:'04/22',name:'이명환',cat:'굿즈제작',amt:585000,bank:'개인',memo:''},
       ]
     },
-    5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:2981874,fixedPers:4712300,totalFixed:7694174,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:0,opIncome:3686007,
+    5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:6249174,fixedPers:4712300,totalFixed:10961474,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:0,opIncome:418707,
       fixedDetail:[
+        {name:'임대료 (베니스, 월초 반영)',amt:3267300,bank:'법인',memo:'5월 귀속 고정비'},
         {name:'임대 관리비',amt:965260,bank:'법인'},{name:'법인카드 결제',amt:1553074,bank:'법인'},
         {name:'알고케어',amt:103950,bank:'법인'},{name:'에브리렌탈',amt:110000,bank:'법인'},
         {name:'코코렌탈',amt:55000,bank:'법인'},{name:'세무수수료',amt:165000,bank:'법인'},
@@ -267,7 +294,8 @@ const SAVED = {
         {date:'05/22',name:'쿠팡',cat:'소모품',amt:13260,bank:'개인',memo:''},
         {date:'05/28',name:'쿠팡 (햇반·토레타·김)',cat:'소모품',amt:72770,bank:'개인',memo:''},
         {date:'05/31',name:'쿠팡 (화이트마카·테이프)',cat:'소모품',amt:10180,bank:'개인',memo:''},
-      ]
+      ],
+      specialDetail:[]
     }
   }
 };
@@ -277,11 +305,33 @@ const SAVED = {
 // ============================================================
 const MN = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const CCAT = {'마케팅':'#3b82f6','소모품':'#22c55e','기자재':'#f59e0b','장비(심박수)':'#8b5cf6','식비':'#ef4444','시설':'#6b7280','관계비':'#ec4899','기타':'#9ca3af'};
-const tc='rgba(0,0,0,0.45)', gc='rgba(0,0,0,0.06)';
+const tc='rgba(51,65,85,0.78)', gc='rgba(15,23,42,0.08)';
 let charts={};
 
 function fmt(n){return(n===undefined||n===null||isNaN(n))?'-':Math.round(n).toLocaleString();}
 function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
+
+function toggleDrill(did, event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
+  const panel=document.getElementById('drill-'+did);
+  const icon=document.getElementById('earr-'+did);
+  if(!panel) return;
+  const open=panel.classList.contains('open');
+  panel.classList.toggle('open',!open);
+  if(icon) icon.classList.toggle('open',!open);
+}
+
+document.addEventListener('click', function(e){
+  const row=e.target.closest && e.target.closest('.row.clk[data-drill]');
+  if(!row) return;
+  toggleDrill(row.getAttribute('data-drill'), e);
+});
+
+document.addEventListener('keydown', function(e){
+  if((e.key==='Enter' || e.key===' ') && e.target.classList && e.target.classList.contains('clk')){
+    toggleDrill(e.target.getAttribute('data-drill'), e);
+  }
+});
 
 // ============================================================
 // 모드 전환
@@ -326,17 +376,6 @@ function swTab(id, key){
   else{
     const m=parseInt(key.replace('m',''));
     el.innerHTML = renderMonth(results[m], MN[m]);
-    el.querySelectorAll('.row.clk').forEach(row=>{
-      row.addEventListener('click',()=>{
-        const did=row.getAttribute('data-drill');
-        const panel=document.getElementById('drill-'+did);
-        const icon=document.getElementById('earr-'+did);
-        if(!panel)return;
-        const open=panel.classList.contains('open');
-        panel.classList.toggle('open',!open);
-        if(icon)icon.classList.toggle('open',!open);
-      });
-    });
   }
   requestAnimationFrame(()=>drawCharts(key,results,months));
 }
@@ -462,6 +501,38 @@ function renderMonth(r, mn){
   });
   drillHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--red)">${fmt(r.totalVar)}원</span></div>`;
 
+  const bySpecial={};
+  (r.specialDetail||[]).forEach(i=>{(bySpecial[i.cat]=bySpecial[i.cat]||[]).push(i);});
+  let specialHTML='';
+  Object.entries(bySpecial).forEach(([cat,items])=>{
+    const total=items.reduce((s,i)=>s+i.amt,0);
+    const col=CCAT[cat]||'#f59e0b';
+    specialHTML+=`<div class="dg">
+      <div class="dgh"><span class="dgl"><span class="dgdot" style="background:${col}"></span>${cat}</span><span class="dgt">${fmt(total)}</span></div>
+      ${items.map(i=>`<div class="di">
+        <span class="ddate">${i.date}</span>
+        <span class="dname">${i.name}${i.memo?` <span style="color:var(--text3);font-size:10px">(${i.memo})</span>`:''}</span>
+        <span class="dbk ${i.bank==='법인'?'bc':'bp'}">${i.bank}</span>
+        <span class="damt" style="color:var(--amber)">${fmt(i.amt)}</span>
+      </div>`).join('')}
+    </div>`;
+  });
+  if(!specialHTML && r.totalSpecial>0){
+    specialHTML=`<div class="di"><span class="dname">상세 내역 없음</span><span class="damt" style="color:var(--amber)">${fmt(r.totalSpecial)}</span></div>`;
+  }
+  if(!specialHTML && (!r.totalSpecial || r.totalSpecial<=0)){
+    specialHTML=`<div class="di"><span class="dname">이번 달 특수 지출 없음</span><span class="damt" style="color:var(--text3)">0</span></div>`;
+  }
+  specialHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--amber)">${fmt(r.totalSpecial)}원</span></div>`;
+
+  const fixedItems = r.fixedDetail || [];
+  let fixedHTML = fixedItems.length ? fixedItems.map(f=>`<div class="di">
+        <span class="dname">${f.name}${f.memo?` <span style="color:var(--text3);font-size:10px">(${f.memo})</span>`:''}</span>
+        <span class="dbk ${String(f.bank||'').includes('법인')?'bc':'bp'}">${f.bank||'-'}</span>
+        <span class="damt">${fmt(f.amt)}</span>
+      </div>`).join('') : `<div class="di"><span class="dname">상세 내역 없음</span><span class="damt">${fmt(r.totalFixed)}</span></div>`;
+  fixedHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--red)">${fmt(r.totalFixed)}원</span></div>`;
+
   return `
   <div class="mg">
     <div class="metric"><div class="ml">통합 월초잔고</div><div class="mv">${fmt(r.totalStart)}</div></div>
@@ -477,14 +548,21 @@ function renderMonth(r, mn){
     <div class="row"><span class="rn">단기권</span><span class="ra g">${fmt(r.cashShort)}</span></div>
     <div class="row"><span class="rn">천원냉장고</span><span class="ra g">${fmt(r.fridge)}</span></div>
     <div class="row"><span class="rn">기타</span><span class="ra g">${fmt(r.etcRev)}</span></div>
-    <div class="row"><span class="rn">고정비</span><span class="ra r">${fmt(r.totalFixed)}</span></div>
-    ${(r.fixedDetail||[]).map(f=>`<div class="row sub"><span class="rn">${f.name} <span class="bdg ${f.bank.includes('법인')?'bc':'bp'}" style="font-size:9px">${f.bank}</span></span><span class="ra r" style="font-size:12px">${fmt(f.amt)}</span></div>`).join('')}
-    <div class="row clk" data-drill="${r.month}-var">
+    <div class="row clk" data-drill="${r.month}-fixed" onclick="toggleDrill('${r.month}-fixed', event)" role="button" tabindex="0">
+      <span class="rn">고정비 <span class="earr" id="earr-${r.month}-fixed">▼</span></span>
+      <span class="ra r">${fmt(r.totalFixed)}</span>
+    </div>
+    <div class="drill" id="drill-${r.month}-fixed">${fixedHTML}</div>
+    <div class="row clk" data-drill="${r.month}-var" onclick="toggleDrill('${r.month}-var', event)" role="button" tabindex="0">
       <span class="rn">변동 사업비 <span class="earr" id="earr-${r.month}-var">▼</span></span>
       <span class="ra r">${fmt(r.totalVar)}</span>
     </div>
     <div class="drill" id="drill-${r.month}-var">${drillHTML}</div>
-    ${r.totalSpecial>0?`<div class="row"><span class="rn" style="color:var(--amber)">특수 지출</span><span class="ra o">${fmt(r.totalSpecial)}</span></div>`:''}
+    <div class="row clk" data-drill="${r.month}-special" onclick="toggleDrill('${r.month}-special', event)" role="button" tabindex="0">
+      <span class="rn" style="color:var(--amber)">특수 지출 <span class="earr" id="earr-${r.month}-special">▼</span></span>
+      <span class="ra o">${fmt(r.totalSpecial)}</span>
+    </div>
+    <div class="drill" id="drill-${r.month}-special">${specialHTML}</div>
     <div class="row tot"><span class="rn">영업 이익</span><span class="ra g">${fmt(r.opIncome)}</span></div>
   </div>`;
 }
@@ -655,6 +733,10 @@ function calcMonth(cTx,pTx,m){
   cm.filter(t=>t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.out,bank:'법인',memo:t.memo}));
   pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.amt,bank:'개인',memo:t.memo}));
   varItems.sort((a,b)=>a.date.localeCompare(b.date));
+  const specialItems=[];
+  cm.filter(t=>t.cat.startsWith('특수_')).forEach(t=>specialItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('특수_',''),amt:t.out,bank:'법인',memo:t.memo}));
+  pm.filter(t=>t.type==='출금'&&t.cat.startsWith('특수_')).forEach(t=>specialItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('특수_',''),amt:t.amt,bank:'개인',memo:t.memo}));
+  specialItems.sort((a,b)=>a.date.localeCompare(b.date));
   const fixedDetail=[];
   cm.filter(t=>FIXED_C.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.out,bank:'법인'}));
   pm.filter(t=>t.type==='출금'&&FIXED_P.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.amt,bank:'개인'}));
@@ -668,7 +750,7 @@ function calcMonth(cTx,pTx,m){
     etcRev:pm.filter(t=>t.type==='입금'&&['매출_온라인(의류)','매출_소액기타','매출_기타'].includes(t.cat)).reduce((s,t)=>s+t.amt,0),
     totalFixed:fc+fp,fixedCorp:fc,fixedPers:fp,totalVar:vc+vp,varCorp:vc,varPers:vp,
     totalSpecial:spC+spP,opIncome:(cr+pr)-(fc+fp)-(vc+vp),
-    varDetail:varItems,fixedDetail
+    varDetail:varItems,specialDetail:specialItems,fixedDetail
   };
 }
 
