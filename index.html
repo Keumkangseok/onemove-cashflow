@@ -56,7 +56,7 @@ body{background:linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);color:var(--te
 .row.sub{padding-left:14px}
 .row.sub .rn{font-size:12px;color:var(--text2)}
 .row.tot{border-top:1px solid var(--border2);padding-top:10px;margin-top:3px;font-weight:700;border-bottom:none}
-.row.clk{cursor:pointer;border-radius:var(--rs);transition:background .15s}
+.row.clk{cursor:pointer;border-radius:var(--rs);transition:background .15s;user-select:none}
 .row.clk:hover{background:rgba(15,23,42,.04);margin:0 -6px;padding-left:6px;padding-right:6px}
 .rn{flex:2;min-width:0}
 .ra{font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -195,6 +195,15 @@ const SAVED = {
         {date:'03/30',name:'애드피아몰',cat:'마케팅',amt:16250,bank:'법인',memo:''},
         {date:'03/18',name:'음료구매 (쿠팡)',cat:'소모품',amt:27530,bank:'법인',memo:''},
         {date:'03/20',name:'KIM OLEG 택배',cat:'소모품',amt:12000,bank:'법인',memo:'한진착불'},
+      ],
+      specialDetail:[
+        {date:'03/02',name:'월세',cat:'구월세',amt:3267000,bank:'개인',memo:''},
+        {date:'03/04',name:'관리비 12,1',cat:'구사무실',amt:589740,bank:'법인',memo:''},
+        {date:'03/09',name:'아브뉴월세',cat:'구사무실',amt:550000,bank:'법인',memo:''},
+        {date:'03/24',name:'이사 보증금',cat:'이사',amt:50000,bank:'개인',memo:''},
+        {date:'03/26',name:'이사',cat:'이사',amt:480000,bank:'개인',memo:''},
+        {date:'03/27',name:'폐기물처리비',cat:'이사',amt:86000,bank:'개인',memo:''},
+        {date:'03/31',name:'신지원',cat:'구사무실',amt:550000,bank:'법인',memo:''},
       ]
     },
     4:{month:4,corpStart:7438552,corpEnd:1765026,persStart:4028774,persEnd:5838270,totalStart:11467326,totalEnd:7603296,totalRev:24792256,cardRev:10814840,siruRev:9162800,cashMem:4597000,cashShort:178000,fridge:29616,etcRev:10000,fixedCorp:8577821,fixedPers:4905000,totalFixed:13482821,varCorp:1837780,varPers:3770420,totalVar:5608200,totalSpecial:9132205,opIncome:5701235,
@@ -243,6 +252,16 @@ const SAVED = {
         {date:'04/28',name:'광릉불고기',cat:'식비',amt:70000,bank:'개인',memo:''},
         {date:'04/30',name:'삼시세끼',cat:'식비',amt:21900,bank:'개인',memo:''},
         {date:'04/24',name:'남스짐 화환',cat:'관계비',amt:85000,bank:'개인',memo:''},
+      ],
+      specialDetail:[
+        {date:'04/01',name:'이기현',cat:'투자회수',amt:4400000,bank:'법인',memo:''},
+        {date:'04/02',name:'배곧아브뉴프랑',cat:'구사무실',amt:636290,bank:'법인',memo:''},
+        {date:'04/05',name:'안용식(대성)',cat:'세무조정',amt:1035415,bank:'법인',memo:''},
+        {date:'04/07',name:'굿즈 티셔츠',cat:'굿즈제작',amt:1425500,bank:'개인',memo:''},
+        {date:'04/19',name:'회식비',cat:'이벤트',amt:325000,bank:'개인',memo:''},
+        {date:'04/20',name:'잔디 롤매트',cat:'시설',amt:660000,bank:'개인',memo:''},
+        {date:'04/22',name:'하이록스 티셔츠',cat:'굿즈제작',amt:65000,bank:'개인',memo:''},
+        {date:'04/22',name:'이명환',cat:'굿즈제작',amt:585000,bank:'개인',memo:''},
       ]
     },
     5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:2981874,fixedPers:4712300,totalFixed:7694174,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:0,opIncome:3686007,
@@ -274,7 +293,8 @@ const SAVED = {
         {date:'05/22',name:'쿠팡',cat:'소모품',amt:13260,bank:'개인',memo:''},
         {date:'05/28',name:'쿠팡 (햇반·토레타·김)',cat:'소모품',amt:72770,bank:'개인',memo:''},
         {date:'05/31',name:'쿠팡 (화이트마카·테이프)',cat:'소모품',amt:10180,bank:'개인',memo:''},
-      ]
+      ],
+      specialDetail:[]
     }
   }
 };
@@ -289,6 +309,28 @@ let charts={};
 
 function fmt(n){return(n===undefined||n===null||isNaN(n))?'-':Math.round(n).toLocaleString();}
 function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
+
+function toggleDrill(did, event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
+  const panel=document.getElementById('drill-'+did);
+  const icon=document.getElementById('earr-'+did);
+  if(!panel) return;
+  const open=panel.classList.contains('open');
+  panel.classList.toggle('open',!open);
+  if(icon) icon.classList.toggle('open',!open);
+}
+
+document.addEventListener('click', function(e){
+  const row=e.target.closest && e.target.closest('.row.clk[data-drill]');
+  if(!row) return;
+  toggleDrill(row.getAttribute('data-drill'), e);
+});
+
+document.addEventListener('keydown', function(e){
+  if((e.key==='Enter' || e.key===' ') && e.target.classList && e.target.classList.contains('clk')){
+    toggleDrill(e.target.getAttribute('data-drill'), e);
+  }
+});
 
 // ============================================================
 // 모드 전환
@@ -333,17 +375,6 @@ function swTab(id, key){
   else{
     const m=parseInt(key.replace('m',''));
     el.innerHTML = renderMonth(results[m], MN[m]);
-    el.querySelectorAll('.row.clk').forEach(row=>{
-      row.addEventListener('click',()=>{
-        const did=row.getAttribute('data-drill');
-        const panel=document.getElementById('drill-'+did);
-        const icon=document.getElementById('earr-'+did);
-        if(!panel)return;
-        const open=panel.classList.contains('open');
-        panel.classList.toggle('open',!open);
-        if(icon)icon.classList.toggle('open',!open);
-      });
-    });
   }
   requestAnimationFrame(()=>drawCharts(key,results,months));
 }
@@ -469,6 +500,27 @@ function renderMonth(r, mn){
   });
   drillHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--red)">${fmt(r.totalVar)}원</span></div>`;
 
+  const bySpecial={};
+  (r.specialDetail||[]).forEach(i=>{(bySpecial[i.cat]=bySpecial[i.cat]||[]).push(i);});
+  let specialHTML='';
+  Object.entries(bySpecial).forEach(([cat,items])=>{
+    const total=items.reduce((s,i)=>s+i.amt,0);
+    const col=CCAT[cat]||'#f59e0b';
+    specialHTML+=`<div class="dg">
+      <div class="dgh"><span class="dgl"><span class="dgdot" style="background:${col}"></span>${cat}</span><span class="dgt">${fmt(total)}</span></div>
+      ${items.map(i=>`<div class="di">
+        <span class="ddate">${i.date}</span>
+        <span class="dname">${i.name}${i.memo?` <span style="color:var(--text3);font-size:10px">(${i.memo})</span>`:''}</span>
+        <span class="dbk ${i.bank==='법인'?'bc':'bp'}">${i.bank}</span>
+        <span class="damt" style="color:var(--amber)">${fmt(i.amt)}</span>
+      </div>`).join('')}
+    </div>`;
+  });
+  if(!specialHTML && r.totalSpecial>0){
+    specialHTML=`<div class="di"><span class="dname">상세 내역 없음</span><span class="damt" style="color:var(--amber)">${fmt(r.totalSpecial)}</span></div>`;
+  }
+  specialHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--amber)">${fmt(r.totalSpecial)}원</span></div>`;
+
   return `
   <div class="mg">
     <div class="metric"><div class="ml">통합 월초잔고</div><div class="mv">${fmt(r.totalStart)}</div></div>
@@ -486,12 +538,16 @@ function renderMonth(r, mn){
     <div class="row"><span class="rn">기타</span><span class="ra g">${fmt(r.etcRev)}</span></div>
     <div class="row"><span class="rn">고정비</span><span class="ra r">${fmt(r.totalFixed)}</span></div>
     ${(r.fixedDetail||[]).map(f=>`<div class="row sub"><span class="rn">${f.name} <span class="bdg ${f.bank.includes('법인')?'bc':'bp'}" style="font-size:9px">${f.bank}</span></span><span class="ra r" style="font-size:12px">${fmt(f.amt)}</span></div>`).join('')}
-    <div class="row clk" data-drill="${r.month}-var">
+    <div class="row clk" data-drill="${r.month}-var" onclick="toggleDrill('${r.month}-var', event)" role="button" tabindex="0">
       <span class="rn">변동 사업비 <span class="earr" id="earr-${r.month}-var">▼</span></span>
       <span class="ra r">${fmt(r.totalVar)}</span>
     </div>
     <div class="drill" id="drill-${r.month}-var">${drillHTML}</div>
-    ${r.totalSpecial>0?`<div class="row"><span class="rn" style="color:var(--amber)">특수 지출</span><span class="ra o">${fmt(r.totalSpecial)}</span></div>`:''}
+    ${r.totalSpecial>0?`<div class="row clk" data-drill="${r.month}-special" onclick="toggleDrill('${r.month}-special', event)" role="button" tabindex="0">
+      <span class="rn" style="color:var(--amber)">특수 지출 <span class="earr" id="earr-${r.month}-special">▼</span></span>
+      <span class="ra o">${fmt(r.totalSpecial)}</span>
+    </div>
+    <div class="drill" id="drill-${r.month}-special">${specialHTML}</div>`:''}
     <div class="row tot"><span class="rn">영업 이익</span><span class="ra g">${fmt(r.opIncome)}</span></div>
   </div>`;
 }
@@ -662,6 +718,10 @@ function calcMonth(cTx,pTx,m){
   cm.filter(t=>t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.out,bank:'법인',memo:t.memo}));
   pm.filter(t=>t.type==='출금'&&t.cat.startsWith('변동_')).forEach(t=>varItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('변동_',''),amt:t.amt,bank:'개인',memo:t.memo}));
   varItems.sort((a,b)=>a.date.localeCompare(b.date));
+  const specialItems=[];
+  cm.filter(t=>t.cat.startsWith('특수_')).forEach(t=>specialItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('특수_',''),amt:t.out,bank:'법인',memo:t.memo}));
+  pm.filter(t=>t.type==='출금'&&t.cat.startsWith('특수_')).forEach(t=>specialItems.push({date:t.date.substring(5),name:t.name,cat:t.cat.replace('특수_',''),amt:t.amt,bank:'개인',memo:t.memo}));
+  specialItems.sort((a,b)=>a.date.localeCompare(b.date));
   const fixedDetail=[];
   cm.filter(t=>FIXED_C.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.out,bank:'법인'}));
   pm.filter(t=>t.type==='출금'&&FIXED_P.includes(t.cat)).forEach(t=>fixedDetail.push({name:t.name,amt:t.amt,bank:'개인'}));
@@ -675,7 +735,7 @@ function calcMonth(cTx,pTx,m){
     etcRev:pm.filter(t=>t.type==='입금'&&['매출_온라인(의류)','매출_소액기타','매출_기타'].includes(t.cat)).reduce((s,t)=>s+t.amt,0),
     totalFixed:fc+fp,fixedCorp:fc,fixedPers:fp,totalVar:vc+vp,varCorp:vc,varPers:vp,
     totalSpecial:spC+spP,opIncome:(cr+pr)-(fc+fp)-(vc+vp),
-    varDetail:varItems,fixedDetail
+    varDetail:varItems,specialDetail:specialItems,fixedDetail
   };
 }
 
