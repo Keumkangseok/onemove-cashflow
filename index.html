@@ -264,7 +264,7 @@ const SAVED = {
         {date:'04/22',name:'이명환',cat:'굿즈제작',amt:585000,bank:'개인',memo:''},
       ]
     },
-    5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:6249174,fixedPers:4712300,totalFixed:10961474,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:0,opIncome:418707,
+    5:{month:5,corpStart:1765026,corpEnd:5176969,persStart:5838270,persEnd:6296622,totalStart:7603296,totalEnd:11473591,totalRev:13416081,cardRev:6105929,siruRev:2587946,cashMem:4549900,cashShort:135000,fridge:32306,etcRev:5000,fixedCorp:6249174,fixedPers:4712300,totalFixed:10961474,varCorp:550000,varPers:1485900,totalVar:2035900,totalSpecial:182000,opIncome:418707,
       fixedDetail:[
         {name:'임대료 (베니스, 월초 반영)',amt:3267300,bank:'법인',memo:'5월 귀속 고정비'},
         {name:'임대 관리비',amt:965260,bank:'법인'},{name:'법인카드 결제',amt:1553074,bank:'법인'},
@@ -295,7 +295,11 @@ const SAVED = {
         {date:'05/28',name:'쿠팡 (햇반·토레타·김)',cat:'소모품',amt:72770,bank:'개인',memo:''},
         {date:'05/31',name:'쿠팡 (화이트마카·테이프)',cat:'소모품',amt:10180,bank:'개인',memo:''},
       ],
-      specialDetail:[]
+      specialDetail:[
+        {date:'05/13',name:'좋은날엔닭갈비',cat:'엠티지출',amt:50000,bank:'개인',memo:''},
+        {date:'05/28',name:'황태집',cat:'엠티지출',amt:77000,bank:'개인',memo:''},
+        {date:'05/28',name:'방이샤브',cat:'엠티지출',amt:55000,bank:'개인',memo:''},
+      ]
     }
   }
 };
@@ -309,6 +313,8 @@ const tc='rgba(51,65,85,0.78)', gc='rgba(15,23,42,0.08)';
 let charts={};
 
 function fmt(n){return(n===undefined||n===null||isNaN(n))?'-':Math.round(n).toLocaleString();}
+function calcTotalExpense(r){return (r.totalFixed||0)+(r.totalVar||0)+(r.totalSpecial||0);}
+function calcNetAfterSpecial(r){return (r.opIncome||0)-(r.totalSpecial||0);}
 function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
 
 function toggleDrill(did, event){
@@ -349,22 +355,28 @@ function switchMode(m){
 // ============================================================
 // 대시보드 렌더링
 // ============================================================
+function getTabDefs(months){
+  const orderedMonths = [...months].sort((a,b)=>b-a); // 최신 월이 가장 먼저 보이도록 정렬
+  return [
+    ...orderedMonths.map(m=>({key:'m'+m, label:MN[m]})),
+    {key:'fixed',label:'고정비'},
+    {key:'revenue',label:'매출 분석'},
+    {key:'summary',label:'월별 요약'}
+  ];
+}
+
 function renderDash(id, results, months){
   const tabEl = document.getElementById('tabs-'+id);
-  const defs = [
-    {key:'summary',label:'월별 요약'},
-    {key:'revenue',label:'매출 분석'},
-    {key:'fixed',label:'고정비'},
-    ...months.map(m=>({key:'m'+m, label:MN[m]}))
-  ];
+  const defs = getTabDefs(months);
   tabEl.innerHTML = defs.map((t,i)=>`<div class="tab ${i===0?'on':''}" onclick="swTab('${id}','${t.key}')">${t.label}</div>`).join('');
-  swTab(id,'summary');
+  swTab(id, defs[0]?.key || 'summary');
 }
 
 function swTab(id, key){
   destroyCharts();
+  const tabMonths = id==='saved' ? SAVED.months : newMonths;
+  const keys = getTabDefs(tabMonths).map(t=>t.key);
   document.querySelectorAll(`#tabs-${id} .tab`).forEach((el,i)=>{
-    const keys=['summary','revenue','fixed',...(id==='saved'?SAVED.months:newMonths).map(m=>'m'+m)];
     el.classList.toggle('on', keys[i]===key);
   });
   const results = id==='saved' ? SAVED.results : newResults;
@@ -404,8 +416,10 @@ function renderSummary(R,M){
         <tr class="sub"><td>ㄴ 현금회원권</td>${M.map(m=>`<td style="color:var(--text2)">${fmt(R[m].cashMem)}</td>`).join('')}</tr>
         <tr><td>총 고정비</td>${M.map(m=>`<td style="color:var(--red);font-weight:600">${fmt(R[m].totalFixed)}</td>`).join('')}</tr>
         <tr><td>총 변동비</td>${M.map(m=>`<td style="color:var(--red)">${fmt(R[m].totalVar)}</td>`).join('')}</tr>
-        <tr><td>특수 지출</td>${M.map(m=>`<td style="color:var(--amber)">${fmt(R[m].totalSpecial)||'-'}</td>`).join('')}</tr>
+        <tr><td>특수 지출</td>${M.map(m=>`<td style="color:var(--amber)">${fmt(R[m].totalSpecial)}</td>`).join('')}</tr>
+        <tr><td>총 지출</td>${M.map(m=>`<td style="color:var(--red);font-weight:700">${fmt(calcTotalExpense(R[m]))}</td>`).join('')}</tr>
         <tr class="tot"><td>영업 이익</td>${M.map(m=>`<td>${fmt(R[m].opIncome)}</td>`).join('')}</tr>
+        <tr><td>특수지출 반영 후 순손익</td>${M.map(m=>`<td style="color:${calcNetAfterSpecial(R[m])>=0?'var(--green)':'var(--red)'};font-weight:700">${fmt(calcNetAfterSpecial(R[m]))}</td>`).join('')}</tr>
       </tbody>
     </table>
   </div>
@@ -533,14 +547,18 @@ function renderMonth(r, mn){
       </div>`).join('') : `<div class="di"><span class="dname">상세 내역 없음</span><span class="damt">${fmt(r.totalFixed)}</span></div>`;
   fixedHTML+=`<div class="dsubt"><span>합계</span><span style="color:var(--red)">${fmt(r.totalFixed)}원</span></div>`;
 
+  const totalExpense = calcTotalExpense(r);
+  const netAfterSpecial = calcNetAfterSpecial(r);
   return `
   <div class="mg">
     <div class="metric"><div class="ml">통합 월초잔고</div><div class="mv">${fmt(r.totalStart)}</div></div>
     <div class="metric"><div class="ml">총 매출</div><div class="mv g">${fmt(r.totalRev)}</div></div>
-    <div class="metric"><div class="ml">영업 이익</div><div class="mv g">${fmt(r.opIncome)}</div></div>
+    <div class="metric"><div class="ml">총 지출</div><div class="mv r">${fmt(totalExpense)}</div><div class="ms">고정비+변동비+특수지출</div></div>
+    <div class="metric"><div class="ml">영업 이익</div><div class="mv ${r.opIncome>=0?'g':'r'}">${fmt(r.opIncome)}</div><div class="ms">특수지출 제외</div></div>
+    <div class="metric"><div class="ml">특수 반영 순손익</div><div class="mv ${netAfterSpecial>=0?'g':'r'}">${fmt(netAfterSpecial)}</div><div class="ms">영업이익-특수지출</div></div>
     <div class="metric"><div class="ml">통합 월말잔고</div><div class="mv ${r.totalEnd>=r.totalStart?'g':'r'}">${fmt(r.totalEnd)}</div></div>
   </div>
-  ${r.totalSpecial>0?`<div class="alert aw">특수 지출 ${fmt(r.totalSpecial)}원 발생 (잔고 영향, 영업이익 별도)</div>`:`<div class="alert as">이번 달 특수지출 없음 — 정상 운영 구조</div>`}
+  ${r.totalSpecial>0?`<div class="alert aw">특수 지출 ${fmt(r.totalSpecial)}원 발생 — 영업이익과 별도 표시, 순손익에는 반영</div>`:`<div class="alert as">이번 달 특수지출 없음 — 정상 운영 구조</div>`}
   <div class="card">
     <div class="row"><span class="rn">카드정산</span><span class="ra g">${fmt(r.cardRev)}</span></div>
     <div class="row"><span class="rn">시루정산 (이기현)</span><span class="ra g">${fmt(r.siruRev)}</span></div>
@@ -563,7 +581,9 @@ function renderMonth(r, mn){
       <span class="ra o">${fmt(r.totalSpecial)}</span>
     </div>
     <div class="drill" id="drill-${r.month}-special">${specialHTML}</div>
-    <div class="row tot"><span class="rn">영업 이익</span><span class="ra g">${fmt(r.opIncome)}</span></div>
+    <div class="row tot"><span class="rn">총 지출</span><span class="ra r">${fmt(totalExpense)}</span></div>
+    <div class="row"><span class="rn">영업 이익 <span style="color:var(--text3);font-size:11px">(특수지출 제외)</span></span><span class="ra ${r.opIncome>=0?'g':'r'}">${fmt(r.opIncome)}</span></div>
+    <div class="row tot"><span class="rn">특수지출 반영 후 순손익</span><span class="ra ${netAfterSpecial>=0?'g':'r'}">${fmt(netAfterSpecial)}</span></div>
   </div>`;
 }
 
@@ -653,7 +673,8 @@ const PR_OUT=[
   {keys:['법인으로'],cat:'내부이체_개→법'},{keys:['트레드밀','철봉'],cat:'변동_기자재'},
   {keys:['이명환','굿즈 티셔츠','하이록스 티셔츠'],cat:'특수_굿즈제작'},
   {keys:['잔디 롤매트'],cat:'특수_시설'},{keys:['회식비'],cat:'특수_이벤트'},
-  {keys:['펜션','황태','샤브','닭갈비','좋은날','방이'],cat:'엠티_지출'},
+  {keys:['펜션','고기값'],cat:'제외_회수성지출'},
+  {keys:['황태','샤브','닭갈비','좋은날','방이'],cat:'특수_엠티지출'},
   {keys:['쿠팡','씨유','닭가슴살','세탁비','음료구매','고무판','모래주머니','손목거치대','프린트카페'],cat:'변동_소모품'},
   {keys:['이사 보증금','폐기물처리비'],cat:'특수_이사'},
   {fn:r=>r.name.includes('이사')&&r.amt>=400000,cat:'특수_이사'},
@@ -750,6 +771,7 @@ function calcMonth(cTx,pTx,m){
     etcRev:pm.filter(t=>t.type==='입금'&&['매출_온라인(의류)','매출_소액기타','매출_기타'].includes(t.cat)).reduce((s,t)=>s+t.amt,0),
     totalFixed:fc+fp,fixedCorp:fc,fixedPers:fp,totalVar:vc+vp,varCorp:vc,varPers:vp,
     totalSpecial:spC+spP,opIncome:(cr+pr)-(fc+fp)-(vc+vp),
+    totalExpense:(fc+fp)+(vc+vp)+(spC+spP),netAfterSpecial:(cr+pr)-(fc+fp)-(vc+vp)-(spC+spP),
     varDetail:varItems,specialDetail:specialItems,fixedDetail
   };
 }
