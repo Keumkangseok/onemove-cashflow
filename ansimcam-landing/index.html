@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안심캠 — 인테리어 현장이 보이면, 불안은 사라집니다</title>
+<meta name="description" content="인테리어·리모델링 현장에 CCTV를 설치하고 고객이 스마트폰으로 실시간 확인. 도난·파손 걱정과 시공 분쟁을 줄이는 현장 안심 서비스, 안심캠.">
+<meta property="og:title" content="안심캠 — 인테리어 현장 CCTV 안심 서비스">
+<meta property="og:description" content="고객이 직접 지켜보는 시공, 신뢰는 그렇게 시작됩니다.">
+<style>
+/* ===== Tokens ===== */
+:root{
+  --paper:#EEF2F1;
+  --paper-2:#E4EAE8;
+  --ink:#17212B;
+  --ink-soft:#45535C;
+  --ink-faint:#6E7C82;
+  --line:#B9C7C6;
+  --line-soft:#D3DBD9;
+  --accent:#D9660C;
+  --accent-ink:#FFFFFF;
+  --steel:#2F5770;
+  --steel-soft:#DCE6E7;
+  --surface:#FFFFFF;
+  --surface-2:#F7F9F8;
+  --shadow:rgba(23,33,43,.10);
+  --radius:3px;
+  --font-display:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-body:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular","Roboto Mono","Consolas","Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#10161C;
+    --paper-2:#151D24;
+    --ink:#E7ECEA;
+    --ink-soft:#9FB0AC;
+    --ink-faint:#71827E;
+    --line:#2B3944;
+    --line-soft:#212C34;
+    --accent:#F0912B;
+    --accent-ink:#14100A;
+    --steel:#7FB0C9;
+    --steel-soft:#1B2C33;
+    --surface:#141C22;
+    --surface-2:#101820;
+    --shadow:rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10161C;
+  --paper-2:#151D24;
+  --ink:#E7ECEA;
+  --ink-soft:#9FB0AC;
+  --ink-faint:#71827E;
+  --line:#2B3944;
+  --line-soft:#212C34;
+  --accent:#F0912B;
+  --accent-ink:#14100A;
+  --steel:#7FB0C9;
+  --steel-soft:#1B2C33;
+  --surface:#141C22;
+  --surface-2:#101820;
+  --shadow:rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding-left:24px;padding-right:24px}
+@media (max-width:640px){.wrap{padding-left:18px;padding-right:18px}}
+
+/* ===== Utility: dimension-line section label ===== */
+.dimline{display:flex;align-items:center;gap:14px;margin:0 0 40px}
+.dimline .tick{flex:0 0 auto;width:1px;height:14px;background:var(--line)}
+.dimline .rule{flex:1 1 auto;height:1px;background:var(--line)}
+.dimline .label{flex:0 0 auto;font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ===== Header ===== */
+.site-header{position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--paper) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);animation:pulse 2.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.brand .dot{animation:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.nav-links{display:flex;align-items:center;gap:30px;font-size:14px;color:var(--ink-soft)}
+.nav-links a{text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:var(--radius);padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .12s,opacity .12s,background .12s}
+.btn:active{transform:translateY(1px)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-accent:hover{opacity:.92}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+.menu-toggle{display:none;background:none;border:1px solid var(--line);border-radius:var(--radius);width:38px;height:38px;cursor:pointer}
+.menu-toggle span{display:block;width:16px;height:2px;background:var(--ink);margin:3px auto}
+@media (max-width:820px){
+  .nav-links{display:none}
+  .nav-cta .btn-ghost{display:none}
+  .menu-toggle{display:block}
+}
+.mobile-panel{display:none;border-top:1px solid var(--line);padding:16px 0;flex-direction:column;gap:14px}
+.mobile-panel.open{display:flex}
+.mobile-panel a{text-decoration:none;font-size:14px;color:var(--ink-soft)}
+
+/* ===== Hero ===== */
+.hero{padding:64px 0 88px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);background:var(--steel-soft);border-radius:100px;padding:6px 12px 6px 10px;margin-bottom:22px}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--steel)}
+.hero h1{font-family:var(--font-display);font-weight:800;font-size:clamp(32px,4.4vw,52px);line-height:1.18;letter-spacing:-.02em;text-wrap:balance;margin-bottom:22px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.lede{font-size:17px;color:var(--ink-soft);max-width:46ch;margin-bottom:32px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:34px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:22px;font-size:13px;color:var(--ink-faint)}
+.hero-meta .item{display:flex;align-items:center;gap:7px}
+.hero-meta .item::before{content:"";width:5px;height:5px;background:var(--line);transform:rotate(45deg)}
+
+/* camera panel */
+.cam-panel{position:relative;background:#0E1519;border-radius:6px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 20px 50px var(--shadow);border:1px solid var(--line)}
+.cam-panel svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.cam-hud{position:absolute;inset:0;pointer-events:none;font-family:var(--font-mono);color:#EAF3EF;font-size:11px;letter-spacing:.04em}
+.cam-hud .corner{position:absolute;width:20px;height:20px;border-color:rgba(234,243,239,.85);border-style:solid;border-width:0}
+.cam-hud .tl{top:12px;left:12px;border-top-width:2px;border-left-width:2px}
+.cam-hud .tr{top:12px;right:12px;border-top-width:2px;border-right-width:2px}
+.cam-hud .bl{bottom:12px;left:12px;border-bottom-width:2px;border-left-width:2px}
+.cam-hud .br{bottom:12px;right:12px;border-bottom-width:2px;border-right-width:2px}
+.cam-hud .tag{position:absolute;top:14px;left:38px;opacity:.9}
+.cam-hud .rec{position:absolute;top:14px;right:38px;display:flex;align-items:center;gap:6px}
+.cam-hud .rec .r{width:7px;height:7px;border-radius:50%;background:#F04B4B;animation:blink 1.3s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.cam-hud .rec .r{animation:none}}
+@keyframes blink{50%{opacity:.15}}
+.cam-hud .time{position:absolute;bottom:14px;left:38px;opacity:.9}
+.cam-hud .badge{position:absolute;bottom:14px;right:38px;background:rgba(217,102,12,.92);color:#fff;padding:3px 8px;border-radius:2px;font-weight:700;letter-spacing:.06em}
+
+/* ===== Sections generic ===== */
+section{padding:80px 0}
+.section-head{max-width:640px;margin-bottom:44px}
+.section-head .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-bottom:10px}
+.section-head h2{font-family:var(--font-display);font-weight:800;font-size:clamp(24px,3vw,34px);letter-spacing:-.015em;text-wrap:balance;margin-bottom:12px}
+.section-head p{color:var(--ink-soft);font-size:15.5px;max-width:56ch}
+
+/* ===== Pain points ===== */
+.pain-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media (max-width:760px){.pain-cols{grid-template-columns:1fr}}
+.pain-col h3{font-size:14px;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:16px}
+.pain-list{list-style:none;display:flex;flex-direction:column;gap:0}
+.pain-list li{padding:16px 0;border-top:1px solid var(--line-soft);font-size:15px;color:var(--ink-soft);display:flex;gap:12px}
+.pain-list li:last-child{border-bottom:1px solid var(--line-soft)}
+.pain-list li::before{content:"\2014";color:var(--line);flex:0 0 auto}
+
+/* ===== Feature grid (blueprint paper) ===== */
+.feature-field{background-image:linear-gradient(var(--line-soft) 1px, transparent 1px),linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);background-size:32px 32px;border:1px solid var(--line);border-radius:6px;padding:1px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+@media (max-width:820px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.feature-grid{grid-template-columns:1fr}}
+.feature{position:relative;background:var(--surface);padding:26px 22px;transition:background .15s}
+.feature:hover{background:var(--surface-2)}
+.feature .fk{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);letter-spacing:.06em;margin-bottom:14px}
+.feature h3{font-size:16px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
+.feature p{font-size:13.5px;color:var(--ink-soft)}
+.feature::before,.feature::after{content:"";position:absolute;width:10px;height:10px;border-color:var(--accent);border-style:solid;border-width:0;opacity:0;transition:opacity .15s}
+.feature::before{top:8px;left:8px;border-top-width:2px;border-left-width:2px}
+.feature::after{bottom:8px;right:8px;border-bottom-width:2px;border-right-width:2px}
+.feature:hover::before,.feature:hover::after{opacity:1}
+
+/* ===== How it works ===== */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+@media (max-width:820px){.steps{grid-template-columns:1fr 1fr;row-gap:36px}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+.step{padding:0 20px 0 0;position:relative}
+.step .rule{height:1px;background:var(--line);position:relative;margin-bottom:22px}
+.step .rule .num{position:absolute;top:-11px;left:0;font-family:var(--font-mono);font-size:12px;color:var(--steel);background:var(--paper);padding-right:8px}
+.step .rule::after{content:"";position:absolute;right:0;top:-3px;width:1px;height:7px;background:var(--line)}
+.step h3{font-size:15.5px;font-weight:700;margin-bottom:8px}
+.step p{font-size:13.5px;color:var(--ink-soft)}
+
+/* ===== B2B split ===== */
+.b2b{background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.b2b-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;align-items:start}
+@media (max-width:860px){.b2b-grid{grid-template-columns:1fr}}
+.b2b-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:28px}
+.b2b-stat{background:var(--surface);padding:18px}
+.b2b-stat .v{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--accent)}
+.b2b-stat .l{font-size:12px;color:var(--ink-faint);margin-top:4px}
+.b2b-list{display:flex;flex-direction:column;gap:22px}
+.b2b-item{display:flex;gap:16px}
+.b2b-item .idx{font-family:var(--font-mono);font-size:12px;color:var(--steel);flex:0 0 26px;padding-top:2px}
+.b2b-item h3{font-size:15.5px;font-weight:700;margin-bottom:6px}
+.b2b-item p{font-size:14px;color:var(--ink-soft)}
+
+/* ===== Pricing ===== */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media (max-width:860px){.pricing-grid{grid-template-columns:1fr}}
+.price-card{position:relative;border:1px solid var(--line);border-radius:6px;padding:28px 24px;background:var(--surface);display:flex;flex-direction:column}
+.price-card.hi{border-color:var(--accent);box-shadow:0 14px 34px var(--shadow)}
+.price-card .tag{position:absolute;top:-11px;left:24px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;padding:3px 9px;border-radius:2px;letter-spacing:.04em}
+.price-card .pname{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.price-card .pfor{font-size:14px;color:var(--ink-soft);margin-bottom:18px}
+.price-card .pval{font-size:22px;font-weight:800;margin-bottom:20px;font-family:var(--font-display)}
+.price-card .pval small{font-size:13px;font-weight:500;color:var(--ink-faint)}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:26px;flex:1}
+.price-list li{font-size:13.5px;color:var(--ink-soft);display:flex;gap:9px}
+.price-list li::before{content:"";width:5px;height:9px;border-right:2px solid var(--steel);border-bottom:2px solid var(--steel);transform:rotate(45deg);flex:0 0 auto;margin-top:2px}
+
+/* ===== FAQ ===== */
+.faq{max-width:760px}
+.faq-item{border-top:1px solid var(--line-soft)}
+.faq-item:last-child{border-bottom:1px solid var(--line-soft)}
+.faq-q{width:100%;background:none;border:none;text-align:left;padding:20px 4px;display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;font-size:15px;font-weight:600}
+.faq-q .plus{font-family:var(--font-mono);font-size:16px;color:var(--steel);transition:transform .18s;flex:0 0 auto}
+.faq-item.open .faq-q .plus{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .22s ease}
+.faq-a p{padding:0 4px 20px;font-size:14px;color:var(--ink-soft);max-width:64ch}
+
+/* ===== Contact ===== */
+.contact{background:var(--ink);color:var(--paper);border-radius:8px;padding:52px 44px;position:relative;overflow:hidden}
+:root[data-theme="dark"] .contact{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .contact{background:var(--surface);color:var(--ink);border:1px solid var(--line)}}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+@media (max-width:820px){.contact-grid{grid-template-columns:1fr}.contact{padding:36px 24px}}
+.contact h2{font-family:var(--font-display);font-size:clamp(22px,3vw,30px);font-weight:800;margin-bottom:14px;letter-spacing:-.015em}
+.contact p.lede{opacity:.75;font-size:14.5px;margin-bottom:26px;max-width:46ch}
+.contact-alt{display:flex;flex-direction:column;gap:12px;font-size:14px}
+.contact-alt .row{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.14);padding:12px 0;font-family:var(--font-mono)}
+:root[data-theme="dark"] .contact-alt .row{border-top-color:var(--line-soft)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .contact-alt .row{border-top-color:var(--line-soft)}}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:12px;opacity:.7}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:3px;padding:11px 12px;color:inherit}
+:root[data-theme="dark"] .field input,:root[data-theme="dark"] .field select,:root[data-theme="dark"] .field textarea{background:var(--surface-2);border-color:var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .field input,:root:not([data-theme="light"]) .field select,:root:not([data-theme="light"]) .field textarea{background:var(--surface-2);border-color:var(--line)}}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.field textarea{resize:vertical;min-height:74px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+.form-note{font-size:12px;opacity:.6;margin-top:6px}
+.success{display:none;border:1px solid var(--accent);border-radius:4px;padding:16px 18px;font-size:14px;margin-top:16px}
+.success.show{display:block}
+
+/* ===== Footer ===== */
+footer{padding:36px 0;border-top:1px solid var(--line)}
+.foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-faint)}
+.foot-grid .fbrand{font-family:var(--font-mono);color:var(--ink-soft)}
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span>안심캠</div>
+    <nav class="nav-links">
+      <a href="#problem">고민</a>
+      <a href="#features">기능</a>
+      <a href="#how">이용방법</a>
+      <a href="#pricing">요금</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="tel:15880000">전화 상담</a>
+      <a class="btn btn-accent" href="#contact">무료 상담 신청</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+  <div class="wrap mobile-panel" id="mobilePanel">
+    <a href="#problem">고민</a>
+    <a href="#features">기능</a>
+    <a href="#how">이용방법</a>
+    <a href="#pricing">요금</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn btn-accent" href="#contact" style="align-self:flex-start">무료 상담 신청</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span>인테리어 현장 CCTV 안심 서비스</span>
+        <h1>현장이 보이면,<br>고객의 <em>불안</em>이 사라집니다</h1>
+        <p class="lede">인테리어·리모델링 현장에 CCTV를 설치하고, 고객은 스마트폰으로 언제든 실시간 진행 상황을 확인합니다. 도난·파손 걱정과 시공 분쟁을 줄이고, 업체는 신뢰로 계약을 늘리세요.</p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href="#contact">무료 상담 신청하기</a>
+          <a class="btn btn-ghost" href="#how">이용 방법 보기</a>
+        </div>
+        <div class="hero-meta">
+          <span class="item">설치 후 당일 시청 가능</span>
+          <span class="item">앱 설치 없이 웹으로 확인</span>
+          <span class="item">기존 CCTV 클라우드 연동</span>
+        </div>
+      </div>
+      <div class="cam-panel" id="camPanel">
+        <svg class="scene" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="400" height="300" fill="#0E1519"></rect>
+          <g stroke="#3E5A63" stroke-width="1.4" fill="none" opacity=".9">
+            <polyline points="30,260 30,40 220,40 220,90"></polyline>
+            <polyline points="220,90 370,90 370,260 30,260"></polyline>
+            <line x1="30" y1="260" x2="370" y2="260"></line>
+            <rect x="70" y="70" width="70" height="90"></rect>
+            <line x1="70" y1="70" x2="140" y2="160"></line>
+            <line x1="140" y1="70" x2="70" y2="160"></line>
+            <rect x="280" y="150" width="60" height="110"></rect>
+            <line x1="280" y1="150" x2="280" y2="260"></line>
+          </g>
+          <g stroke="#D9660C" stroke-width="2" fill="none" opacity=".95">
+            <line x1="190" y1="260" x2="190" y2="150"></line>
+            <line x1="182" y1="150" x2="198" y2="150"></line>
+            <circle cx="190" cy="140" r="9" fill="none"></circle>
+          </g>
+          <g stroke="#5C7A83" stroke-width="1.2" fill="none" opacity=".7">
+            <rect x="205" y="205" width="40" height="14" rx="1"></rect>
+            <line x1="205" y1="212" x2="245" y2="212"></line>
+          </g>
+        </svg>
+        <div class="cam-hud">
+          <span class="corner tl"></span><span class="corner tr"></span>
+          <span class="corner bl"></span><span class="corner br"></span>
+          <span class="tag">CAM 01 · 거실</span>
+          <span class="rec"><span class="r"></span>LIVE</span>
+          <span class="time" id="camTime">2026.08.07 00:00:00</span>
+          <span class="badge">안심캠</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="wrap">
+      <div class="dimline"><span class="tick"></span><span class="rule"></span><span class="label">Problem</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>이런 고민, 있으셨나요</h2>
+        <p>공사 현장은 멀고, 하루 종일 지켜볼 수도 없습니다. 고객과 업체 모두 같은 불안을 안고 공사 기간을 보냅니다.</p>
+      </div>
+      <div class="pain-cols">
+        <div class="pain-col">
+          <h3>고객 입장</h3>
+          <ul class="pain-list">
+            <li>공사 현장에 매번 찾아갈 수 없어 불안하다</li>
+            <li>오늘 작업이 제대로 진행되고 있는지 알 수 없다</li>
+            <li>공사 중 파손·도난이 생기면 증거가 없다</li>
+            <li>완공 후에야 문제를 발견해 되돌리기 어렵다</li>
+          </ul>
+        </div>
+        <div class="pain-col">
+          <h3>업체 입장</h3>
+          <ul class="pain-list">
+            <li>근거 없는 클레임과 분쟁이 부담스럽다</li>
+            <li>여러 현장을 동시에 관리하기 어렵다</li>
+            <li>다른 업체와 차별화할 신뢰 포인트가 필요하다</li>
+            <li>작업자 출입·안전 관리를 확인할 방법이 없다</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="dimline"><span class="tick"></span><span class="rule"></span><span class="label">Solution</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>안심캠이 해결합니다</h2>
+        <p>현장에 카메라 하나를 다는 것만으로, 고객과 업체 모두에게 필요한 확인 수단을 제공합니다.</p>
+      </div>
+      <div class="feature-field">
+        <div class="feature-grid">
+          <div class="feature"><div class="fk">01 · VIEW</div><h3>실시간 현장 시청</h3><p>앱 설치 없이 전용 링크로 웹에서 언제 어디서나 실시간 확인.</p></div>
+          <div class="feature"><div class="fk">02 · RECORD</div><h3>자동 녹화 &amp; 다시보기</h3><p>하루 작업 영상을 자동 저장하고 원하는 시점을 다시 확인.</p></div>
+          <div class="feature"><div class="fk">03 · TIMELAPSE</div><h3>공정 타임랩스</h3><p>착공부터 완공까지 진행 과정을 타임랩스 영상으로 제공.</p></div>
+          <div class="feature"><div class="fk">04 · ALERT</div><h3>이상 감지 알림</h3><p>야간 출입 등 이상 상황 발생 시 알림 전송 (상위 플랜).</p></div>
+          <div class="feature"><div class="fk">05 · TRUST MARK</div><h3>안심 인증 배지</h3><p>설치 현장에 안심캠 인증 배지를 부여해 고객 신뢰도 상승.</p></div>
+          <div class="feature"><div class="fk">06 · CONSOLE</div><h3>다중 현장 관리</h3><p>업체는 관리자 콘솔에서 모든 현장을 한 화면에서 관리.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="dimline"><span class="tick"></span><span class="rule"></span><span class="label">Process</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>이용 방법</h2>
+        <p>상담부터 시청까지, 나흘이면 충분합니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="rule"><span class="num">01</span></div><h3>상담 신청</h3><p>현장 규모와 요구사항을 확인하고 설치 일정을 잡습니다.</p></div>
+        <div class="step"><div class="rule"><span class="num">02</span></div><h3>카메라 설치</h3><p>전문 기사가 방문해 카메라를 설치합니다. 보통 1일 이내.</p></div>
+        <div class="step"><div class="rule"><span class="num">03</span></div><h3>고객 초대</h3><p>고객에게 전용 링크·QR을 발송, 앱 설치 없이 바로 접속.</p></div>
+        <div class="step"><div class="rule"><span class="num">04</span></div><h3>시청 &amp; 아카이브</h3><p>공사 기간 내내 시청하고, 완공 후 하이라이트 영상을 받습니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="b2b" id="b2b">
+    <div class="wrap b2b-grid">
+      <div>
+        <div class="dimline" style="margin-bottom:24px"><span class="tick"></span><span class="rule"></span><span class="label">For Partners</span></div>
+        <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(22px,3vw,30px);letter-spacing:-.015em;margin-bottom:14px">인테리어 업체라면</h2>
+        <p style="color:var(--ink-soft);font-size:15px;max-width:40ch">현장 하나하나에 신뢰를 더해, 계약 전환율은 높이고 분쟁은 줄입니다.</p>
+        <div class="b2b-stats">
+          <div class="b2b-stat"><div class="v">1일</div><div class="l">평균 설치 소요 시간</div></div>
+          <div class="b2b-stat"><div class="v">0원</div><div class="l">고객용 앱 설치 비용</div></div>
+        </div>
+      </div>
+      <div class="b2b-list">
+        <div class="b2b-item"><span class="idx">A</span><div><h3>계약 전환율 상승</h3><p>안심캠 인증 배지는 견적 상담 단계에서부터 신뢰를 보여주는 근거가 됩니다.</p></div></div>
+        <div class="b2b-item"><span class="idx">B</span><div><h3>클레임·분쟁 감소</h3><p>영상 기록이 남아 있어 파손·지연 관련 분쟁 발생 시 명확한 근거가 됩니다.</p></div></div>
+        <div class="b2b-item"><span class="idx">C</span><div><h3>원격 현장 관리</h3><p>대표·소장이 사무실에서도 여러 현장의 작업 진행 상황을 확인합니다.</p></div></div>
+        <div class="b2b-item"><span class="idx">D</span><div><h3>브랜드 차별화</h3><p>같은 견적이라면, 지켜볼 수 있는 업체를 고객은 먼저 선택합니다.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="dimline"><span class="tick"></span><span class="rule"></span><span class="label">Pricing</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>요금 안내</h2>
+        <p>현장 규모와 공사 기간에 따라 맞춤 견적을 안내해 드립니다. 아래는 기본 구성 기준입니다.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="pname">Basic</div>
+          <div class="pfor">소규모 현장 (원룸·소형 매장)</div>
+          <div class="pval">상담 후 안내<br><small>카메라 1대 기준</small></div>
+          <ul class="price-list">
+            <li>실시간 시청</li>
+            <li>7일 녹화 보관</li>
+            <li>전용 시청 링크 발급</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contact">문의하기</a>
+        </div>
+        <div class="price-card hi">
+          <span class="tag">추천</span>
+          <div class="pname">Standard</div>
+          <div class="pfor">일반 주택·상가 현장</div>
+          <div class="pval">상담 후 안내<br><small>카메라 최대 3대</small></div>
+          <ul class="price-list">
+            <li>Basic 기능 전체</li>
+            <li>30일 녹화 보관</li>
+            <li>공정 타임랩스 제공</li>
+            <li>안심 인증 배지</li>
+          </ul>
+          <a class="btn btn-accent" href="#contact">문의하기</a>
+        </div>
+        <div class="price-card">
+          <div class="pname">Enterprise</div>
+          <div class="pfor">다현장 운영 업체</div>
+          <div class="pval">별도 협의<br><small>현장 수 무제한</small></div>
+          <ul class="price-list">
+            <li>Standard 기능 전체</li>
+            <li>다중 현장 통합 관리 콘솔</li>
+            <li>이상 감지 알림</li>
+            <li>전담 매니저 배정</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contact">문의하기</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="dimline"><span class="tick"></span><span class="rule"></span><span class="label">FAQ</span><span class="rule"></span></div>
+      <div class="section-head"><h2>자주 묻는 질문</h2></div>
+      <div class="faq" id="faqList">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">기존에 쓰던 CCTV도 연동되나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>네. 상용 CCTV 클라우드 서비스와 연동해 별도 하드웨어 구축 없이 시작할 수 있습니다. 현재 사용 중인 장비를 알려주시면 연동 가능 여부를 확인해 드립니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">고객이 앱을 설치해야 하나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>아니요. 발급된 전용 링크나 QR코드로 웹 브라우저에서 바로 시청할 수 있어 별도 설치가 필요 없습니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">영상은 얼마나 보관되나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>플랜에 따라 7~30일간 원본이 보관됩니다. 이후 공정 하이라이트·타임랩스 영상은 별도로 아카이브해 완공 후에도 확인할 수 있습니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">개인정보와 보안은 안전한가요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>시청 링크는 암호화되어 발급되며, 접근 권한이 있는 인원만 확인할 수 있도록 관리합니다. 현장 종료 후 영상 접근 권한은 자동으로 회수됩니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">설치 비용과 기간은 어떻게 되나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>현장 규모와 카메라 대수에 따라 비용이 달라지며, 설치는 통상 방문 후 1일 이내에 완료됩니다. 상담 신청 시 현장 조건에 맞는 견적을 안내해 드립니다.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact">
+        <div class="contact-grid">
+          <div>
+            <h2>지금 무료로<br>상담받아보세요</h2>
+            <p class="lede">현장 정보를 남겨주시면, 설치 가능 여부와 예상 견적을 안내해 드립니다.</p>
+            <div class="contact-alt">
+              <div class="row"><span>전화 상담</span><span>1588-0000</span></div>
+              <div class="row"><span>이메일</span><span>hello@ansimcam.kr</span></div>
+              <div class="row"><span>상담 가능 시간</span><span>평일 09:00–18:00</span></div>
+            </div>
+          </div>
+          <form id="contactForm" novalidate>
+            <div class="row2">
+              <div class="field"><label for="f-name">이름 / 업체명</label><input id="f-name" name="name" type="text" required placeholder="홍길동 인테리어"></div>
+              <div class="field"><label for="f-phone">연락처</label><input id="f-phone" name="phone" type="tel" required placeholder="010-0000-0000"></div>
+            </div>
+            <div class="field">
+              <label for="f-type">현장 규모</label>
+              <select id="f-type" name="type">
+                <option>원룸 / 소형 매장</option>
+                <option>아파트 / 일반 주택</option>
+                <option>상가 / 사무실</option>
+                <option>다현장 운영 (업체용)</option>
+              </select>
+            </div>
+            <div class="field"><label for="f-msg">문의 내용</label><textarea id="f-msg" name="message" placeholder="공사 시작 예정일, 희망 카메라 대수 등을 남겨주세요"></textarea></div>
+            <button type="submit" class="btn btn-accent" style="width:100%">상담 신청 보내기</button>
+            <p class="form-note">신청 시 남겨주신 정보는 상담 목적으로만 사용됩니다.</p>
+            <div class="success" id="formSuccess">상담 신청이 접수되었습니다. 영업일 기준 1일 이내 연락드리겠습니다.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <span class="fbrand">안심캠 · ANSIMCAM</span>
+    <span>인테리어 현장 CCTV 안심 서비스 · 사업자 정보는 계약 체결 시 안내드립니다</span>
+    <span id="year">© 2026 안심캠</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toggle = document.getElementById('menuToggle');
+  var panel = document.getElementById('mobilePanel');
+  toggle.addEventListener('click', function(){
+    var open = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  panel.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ panel.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); });
+  });
+
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q');
+    var a = item.querySelector('.faq-a');
+    q.addEventListener('click', function(){
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(o){
+        if(o !== item){ o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null; o.querySelector('.faq-q').setAttribute('aria-expanded','false'); }
+      });
+      if(isOpen){
+        item.classList.remove('open'); a.style.maxHeight = null; q.setAttribute('aria-expanded','false');
+      } else {
+        item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; q.setAttribute('aria-expanded','true');
+      }
+    });
+  });
+
+  var form = document.getElementById('contactForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    document.getElementById('formSuccess').classList.add('show');
+    form.querySelectorAll('input,textarea,select,button').forEach(function(el){ el.disabled = true; });
+  });
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function tick(){
+    var el = document.getElementById('camTime');
+    if(!el) return;
+    var d = new Date();
+    el.textContent = d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  tick(); setInterval(tick, 1000);
+
+  document.getElementById('year').textContent = '© ' + new Date().getFullYear() + ' 안심캠';
+})();
+</script>
+</body>
+</html>
