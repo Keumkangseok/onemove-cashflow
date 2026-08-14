@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOWOL DESIGN · 도월디자인 — 보이는 신뢰, 도월 케어 시스템</title>
+<meta name="description" content="도월디자인은 모든 시공 현장에 케어 시스템을 도입해, 고객이 공사의 시작부터 끝까지 직접 지켜볼 수 있게 합니다.">
+<meta property="og:title" content="DOWOL DESIGN — 보이는 신뢰, 도월 케어 시스템">
+<meta property="og:description" content="시공의 모든 순간을, 고객과 함께 지켜봅니다.">
+<style>
+/* ===== Tokens ===== */
+:root{
+  --paper:#FAF8F4;
+  --paper-2:#F1ECE2;
+  --ink:#171512;
+  --ink-soft:#5B564C;
+  --ink-faint:#928B7C;
+  --line:#E2DCCC;
+  --line-soft:#EDE8DC;
+  --accent:#8A5A32;
+  --accent-ink:#FFFFFF;
+  --surface:#FFFFFF;
+  --shadow:rgba(23,21,18,.08);
+  --font-display:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-body:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular","Roboto Mono","Consolas","Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15130F;
+    --paper-2:#1C1914;
+    --ink:#F2EDE3;
+    --ink-soft:#B7AF9F;
+    --ink-faint:#7B7364;
+    --line:#312B22;
+    --line-soft:#26221C;
+    --accent:#C79A64;
+    --accent-ink:#171310;
+    --surface:#1C1914;
+    --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15130F;
+  --paper-2:#1C1914;
+  --ink:#F2EDE3;
+  --ink-soft:#B7AF9F;
+  --ink-faint:#7B7364;
+  --line:#312B22;
+  --line-soft:#26221C;
+  --accent:#C79A64;
+  --accent-ink:#171310;
+  --surface:#1C1914;
+  --shadow:rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);line-height:1.7;min-height:100vh;-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-left:32px;padding-right:32px}
+@media (max-width:640px){.wrap{padding-left:20px;padding-right:20px}}
+
+/* ===== Logo lockup ===== */
+.lockup{display:flex;flex-direction:column;line-height:1.1}
+.lockup .kr{font-size:10px;letter-spacing:.28em;color:var(--ink-faint);margin-bottom:3px}
+.lockup .en{font-size:16px;font-weight:300;letter-spacing:.24em}
+
+/* ===== Index label (dimline replacement) ===== */
+.dimline{display:flex;align-items:baseline;gap:16px;margin:0 0 56px}
+.dimline .rule{flex:1 1 auto;height:1px;background:var(--line)}
+.dimline .label{flex:0 0 auto;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ===== Header ===== */
+.site-header{position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--paper) 90%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.nav-links{display:flex;align-items:center;gap:34px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.nav-links a{text-decoration:none;transition:color .15s;padding-bottom:2px;border-bottom:1px solid transparent}
+.nav-links a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.nav-cta a{font-size:12px;letter-spacing:.1em;text-decoration:none;border:1px solid var(--ink);padding:11px 22px;transition:background .15s,color .15s}
+.nav-cta a:hover{background:var(--ink);color:var(--paper)}
+.menu-toggle{display:none;background:none;border:1px solid var(--line);width:38px;height:38px;cursor:pointer}
+.menu-toggle span{display:block;width:15px;height:1px;background:var(--ink);margin:4px auto}
+@media (max-width:820px){
+  .nav-links{display:none}
+  .nav-cta{display:none}
+  .menu-toggle{display:block}
+}
+.mobile-panel{display:none;border-top:1px solid var(--line);padding:18px 0;flex-direction:column;gap:16px}
+.mobile-panel.open{display:flex}
+.mobile-panel a{text-decoration:none;font-size:13px;letter-spacing:.08em;color:var(--ink-soft)}
+.mobile-panel .cta{color:var(--ink);font-weight:600}
+
+/* ===== Hero ===== */
+.hero{padding:88px 0 110px}
+.hero-top{max-width:680px;margin-bottom:64px}
+.eyebrow{display:block;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent);margin-bottom:24px}
+.hero h1{font-family:var(--font-display);font-weight:300;font-size:clamp(30px,4.6vw,54px);line-height:1.32;letter-spacing:-.01em;text-wrap:balance;margin-bottom:26px}
+.hero p.lede{font-size:16px;color:var(--ink-soft);max-width:52ch;margin-bottom:36px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ink);padding:14px 28px;font-size:12.5px;letter-spacing:.1em;cursor:pointer;text-decoration:none;transition:background .15s,color .15s,opacity .15s;background:transparent;color:var(--ink)}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.primary:hover{opacity:.82;background:var(--ink)}
+.link-more{font-size:12.5px;letter-spacing:.08em;text-decoration:none;color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:3px;transition:color .15s,border-color .15s}
+.link-more:hover{color:var(--ink);border-color:var(--ink)}
+.btn:focus-visible,.link-more:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* camera / site panel */
+.cam-panel{position:relative;background:var(--surface);border:1px solid var(--line);overflow:hidden;aspect-ratio:16/8}
+.cam-panel svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.cam-hud{position:absolute;inset:0;pointer-events:none;font-size:11px;letter-spacing:.12em;color:var(--ink-soft)}
+.cam-hud .tag{position:absolute;top:22px;left:26px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.cam-hud .tag .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.cam-hud .tag .dot{animation:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.cam-hud .site{position:absolute;top:22px;right:26px;text-transform:uppercase}
+.cam-hud .time{position:absolute;bottom:22px;left:26px;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint)}
+.cam-hud .brand{position:absolute;bottom:20px;right:26px;letter-spacing:.2em;text-transform:uppercase;font-size:10px;border:1px solid var(--line);padding:5px 10px;background:color-mix(in srgb, var(--surface) 70%, transparent)}
+
+/* ===== Sections generic ===== */
+section{padding:96px 0}
+.section-head{max-width:640px;margin-bottom:52px}
+.section-head h2{font-family:var(--font-display);font-weight:300;font-size:clamp(24px,3.2vw,36px);letter-spacing:-.01em;text-wrap:balance;margin-bottom:16px}
+.section-head p{color:var(--ink-soft);font-size:15.5px;max-width:58ch}
+
+/* ===== Pull quote ===== */
+.quote{padding:96px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.quote blockquote{font-family:var(--font-display);font-weight:300;font-size:clamp(22px,3.6vw,38px);line-height:1.5;letter-spacing:-.01em;max-width:820px;text-wrap:balance}
+.quote cite{display:block;margin-top:28px;font-style:normal;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ===== Problem list ===== */
+.problem-list{display:flex;flex-direction:column}
+.problem-row{display:grid;grid-template-columns:120px 1fr;gap:24px;padding:26px 0;border-top:1px solid var(--line-soft)}
+.problem-list .problem-row:last-child{border-bottom:1px solid var(--line-soft)}
+.problem-row .idx{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);padding-top:3px}
+.problem-row p{font-size:16px;color:var(--ink-soft);max-width:60ch}
+.transition-line{margin-top:44px;font-size:15.5px;color:var(--ink-soft);max-width:56ch}
+.transition-line strong{color:var(--ink);font-weight:600}
+
+/* ===== Feature list (editorial rows) ===== */
+.feature-list{display:flex;flex-direction:column}
+.feature-row{display:grid;grid-template-columns:96px 1fr;gap:28px;padding:36px 0;border-top:1px solid var(--line-soft)}
+.feature-list .feature-row:last-child{border-bottom:1px solid var(--line-soft)}
+.feature-row .num{font-family:var(--font-display);font-weight:300;font-size:32px;color:var(--ink-faint);letter-spacing:-.02em}
+.feature-row h3{font-size:17px;font-weight:600;margin-bottom:8px;letter-spacing:-.005em}
+.feature-row p{font-size:14.5px;color:var(--ink-soft);max-width:56ch}
+@media (max-width:600px){.feature-row{grid-template-columns:1fr;gap:10px}}
+
+/* ===== How it works ===== */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+@media (max-width:820px){.steps{grid-template-columns:1fr 1fr;row-gap:44px}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+.step{padding:0 24px 0 0}
+.step .rule{height:1px;background:var(--line);position:relative;margin-bottom:24px}
+.step .num{position:absolute;top:-13px;left:0;font-family:var(--font-mono);font-size:11px;color:var(--accent);background:var(--paper);padding-right:10px}
+.step h3{font-size:15.5px;font-weight:600;margin-bottom:8px}
+.step p{font-size:13.5px;color:var(--ink-soft)}
+
+/* ===== Why us ===== */
+.why{background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.why-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:start}
+@media (max-width:860px){.why-grid{grid-template-columns:1fr}}
+.why-list{display:flex;flex-direction:column}
+.why-item{display:grid;grid-template-columns:44px 1fr;gap:20px;padding:26px 0;border-top:1px solid var(--line)}
+.why-list .why-item:last-child{border-bottom:1px solid var(--line)}
+.why-item .idx{font-size:12px;letter-spacing:.1em;color:var(--accent);padding-top:3px}
+.why-item h3{font-size:15.5px;font-weight:600;margin-bottom:6px}
+.why-item p{font-size:14px;color:var(--ink-soft)}
+
+/* ===== Pricing ===== */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:860px){.pricing-grid{grid-template-columns:1fr}}
+.price-card{position:relative;padding:36px 30px;background:var(--surface);display:flex;flex-direction:column}
+.price-card .tag{align-self:flex-start;font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--ink);padding:4px 10px;margin-bottom:18px}
+.price-card .pname{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px}
+.price-card .pfor{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
+.price-card .pval{font-family:var(--font-display);font-weight:300;font-size:24px;margin-bottom:24px}
+.price-card .pval small{font-size:13px;font-weight:400;color:var(--ink-faint);display:block;margin-top:6px;letter-spacing:0}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:30px;flex:1}
+.price-list li{font-size:13.5px;color:var(--ink-soft);display:flex;gap:10px}
+.price-list li::before{content:"—";color:var(--ink-faint);flex:0 0 auto}
+
+/* ===== FAQ ===== */
+.faq{max-width:780px}
+.faq-item{border-top:1px solid var(--line-soft)}
+.faq-item:last-child{border-bottom:1px solid var(--line-soft)}
+.faq-q{width:100%;background:none;border:none;text-align:left;padding:24px 2px;display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;font-size:15.5px;font-weight:500}
+.faq-q .plus{font-family:var(--font-mono);font-size:16px;color:var(--accent);transition:transform .18s;flex:0 0 auto;font-weight:300}
+.faq-item.open .faq-q .plus{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .22s ease}
+.faq-a p{padding:0 2px 24px;font-size:14px;color:var(--ink-soft);max-width:64ch}
+
+/* ===== Contact ===== */
+.contact{background:var(--ink);color:var(--paper);padding:64px 48px;position:relative}
+:root[data-theme="dark"] .contact{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .contact{background:var(--surface);color:var(--ink);border:1px solid var(--line)}}
+.contact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px}
+@media (max-width:820px){.contact-grid{grid-template-columns:1fr}.contact{padding:40px 26px}}
+.contact h2{font-family:var(--font-display);font-weight:300;font-size:clamp(24px,3.2vw,32px);margin-bottom:18px;letter-spacing:-.01em}
+.contact p.lede{opacity:.72;font-size:14.5px;margin-bottom:30px;max-width:46ch}
+.contact-alt{display:flex;flex-direction:column}
+.contact-alt .row{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.14);padding:14px 0;font-size:13px;letter-spacing:.03em}
+:root[data-theme="dark"] .contact-alt .row{border-top-color:var(--line-soft)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .contact-alt .row{border-top-color:var(--line-soft)}}
+.contact-alt .row:last-child{border-bottom:1px solid rgba(255,255,255,.14)}
+:root[data-theme="dark"] .contact-alt .row:last-child{border-bottom-color:var(--line-soft)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .contact-alt .row:last-child{border-bottom-color:var(--line-soft)}}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.field label{font-size:11.5px;letter-spacing:.06em;opacity:.68}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.2);border-radius:0;padding:12px 13px;color:inherit}
+:root[data-theme="dark"] .field input,:root[data-theme="dark"] .field select,:root[data-theme="dark"] .field textarea{background:var(--paper-2);border-color:var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .field input,:root:not([data-theme="light"]) .field select,:root:not([data-theme="light"]) .field textarea{background:var(--paper-2);border-color:var(--line)}}
+.field input:focus,.field select:focus,.field textarea:focus{outline:1px solid var(--accent);outline-offset:1px}
+.field textarea{resize:vertical;min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+.form-note{font-size:11.5px;opacity:.6;margin-top:8px}
+.success{display:none;border:1px solid var(--accent);padding:18px 20px;font-size:14px;margin-top:18px}
+.success.show{display:block}
+
+/* ===== Footer ===== */
+footer{padding:44px 0;border-top:1px solid var(--line)}
+.foot-grid{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px}
+.foot-meta{font-size:12px;color:var(--ink-faint);text-align:right;line-height:1.8}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="#top" class="lockup" style="text-decoration:none">
+      <span class="kr">도월디자인</span>
+      <span class="en">DOWOL DESIGN</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#philosophy">소개</a>
+      <a href="#care">케어 시스템</a>
+      <a href="#process">진행 방식</a>
+      <a href="#why">도월디자인</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta"><a href="#contact">상담 예약</a></div>
+    <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+  <div class="wrap mobile-panel" id="mobilePanel">
+    <a href="#philosophy">소개</a>
+    <a href="#care">케어 시스템</a>
+    <a href="#process">진행 방식</a>
+    <a href="#why">도월디자인</a>
+    <a href="#faq">FAQ</a>
+    <a class="cta" href="#contact">상담 예약</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-top">
+        <span class="eyebrow">DOWOL CARE — 현장 케어 시스템</span>
+        <h1>눈에 보이는 신뢰,<br>도월디자인의 방식입니다</h1>
+        <p class="lede">도월디자인은 모든 시공 현장에 케어 시스템을 도입해, 고객이 공사의 처음부터 끝까지 직접 지켜볼 수 있게 합니다. 보이지 않아 불안했던 시간을, 눈으로 확인하는 믿음으로 바꿉니다.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#contact">상담 예약하기</a>
+          <a class="link-more" href="#care">케어 시스템 알아보기 →</a>
+        </div>
+      </div>
+      <div class="cam-panel" id="camPanel">
+        <svg class="scene" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <style>
+            .scene-bg{fill:var(--paper-2)}
+            .scene-line{stroke:var(--ink-faint);fill:none}
+            .scene-accent{stroke:var(--accent);fill:none}
+          </style>
+          <rect class="scene-bg" width="800" height="380"></rect>
+          <g class="scene-line" stroke-width="1.2" opacity=".55">
+            <polyline points="70,320 70,80 420,80 420,150"></polyline>
+            <polyline points="420,150 720,150 720,320 70,320"></polyline>
+            <line x1="70" y1="320" x2="720" y2="320"></line>
+            <rect x="140" y="120" width="120" height="150"></rect>
+            <line x1="140" y1="120" x2="260" y2="270"></line>
+            <line x1="260" y1="120" x2="140" y2="270"></line>
+            <rect x="540" y="210" width="110" height="110"></rect>
+          </g>
+          <g class="scene-accent" stroke-width="1.6" opacity=".85">
+            <line x1="380" y1="320" x2="380" y2="200"></line>
+            <line x1="368" y1="200" x2="392" y2="200"></line>
+            <circle cx="380" cy="186" r="12"></circle>
+          </g>
+          <g class="scene-line" stroke-width="1" opacity=".45">
+            <rect x="400" y="255" width="72" height="20" rx="1"></rect>
+          </g>
+        </svg>
+        <div class="cam-hud">
+          <span class="tag"><span class="dot"></span>Live</span>
+          <span class="site">Cam 01 · 거실 시공 현장</span>
+          <span class="time" id="camTime">2026.08.14 00:00:00</span>
+          <span class="brand">DOWOL CARE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="quote" id="philosophy">
+    <div class="wrap">
+      <blockquote>“좋은 시공은 숨기지 않습니다.<br>보여주는 것에서, 신뢰는 시작됩니다.”</blockquote>
+      <cite>— DOWOL DESIGN 시공 철학</cite>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="wrap">
+      <div class="dimline"><span class="label">Before</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>이런 순간, 낯설지 않으신가요</h2>
+      </div>
+      <div class="problem-list">
+        <div class="problem-row"><span class="idx">01</span><p>공사 현장에 매번 찾아갈 수 없어, 오늘 무슨 작업이 있었는지 알 수 없다</p></div>
+        <div class="problem-row"><span class="idx">02</span><p>보이지 않는 벽 안, 바닥 아래 시공이 꼼꼼하게 진행되고 있는지 확신이 서지 않는다</p></div>
+        <div class="problem-row"><span class="idx">03</span><p>공사 중 파손이나 하자가 생겨도, 언제 어떻게 발생했는지 확인할 방법이 없다</p></div>
+        <div class="problem-row"><span class="idx">04</span><p>완공 후에야 문제를 발견해, 이미 되돌리기 어려운 시점이 되어 있다</p></div>
+      </div>
+      <p class="transition-line">도월디자인은 이 불안이 <strong>정보의 부재</strong>에서 온다고 생각합니다. 그래서 현장을 가리는 대신, 열어 보여드리기로 했습니다.</p>
+    </div>
+  </section>
+
+  <section id="care">
+    <div class="wrap">
+      <div class="dimline"><span class="label">Dowol Care System</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>도월 케어 시스템</h2>
+        <p>현장에 케어 카메라를 설치하는 것만으로, 고객과 저희 팀 모두에게 필요한 확인 수단이 생깁니다.</p>
+      </div>
+      <div class="feature-list">
+        <div class="feature-row"><span class="num">01</span><div><h3>실시간 현장 시청</h3><p>앱 설치 없이 전용 링크로 웹에서 언제 어디서나 실시간으로 현장을 확인하실 수 있습니다.</p></div></div>
+        <div class="feature-row"><span class="num">02</span><div><h3>자동 녹화 &amp; 다시보기</h3><p>하루 작업 영상을 자동으로 저장해, 놓친 시간대도 원하실 때 다시 확인하실 수 있습니다.</p></div></div>
+        <div class="feature-row"><span class="num">03</span><div><h3>공정 타임랩스</h3><p>착공부터 완공까지의 전 과정을 하나의 타임랩스 영상으로 정리해 드립니다.</p></div></div>
+        <div class="feature-row"><span class="num">04</span><div><h3>이상 감지 알림</h3><p>야간 출입 등 예정에 없던 상황이 감지되면 즉시 알려드립니다 (프리미엄 케어).</p></div></div>
+        <div class="feature-row"><span class="num">05</span><div><h3>도월 케어 인증</h3><p>케어 시스템이 적용된 현장에는 도월디자인의 품질 관리 기준이 함께 적용됩니다.</p></div></div>
+        <div class="feature-row"><span class="num">06</span><div><h3>담당 PM 통합 모니터링</h3><p>현장 담당 PM도 동일한 화면으로 진행 상황을 확인해, 더 꼼꼼하게 시공을 관리합니다.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="process">
+    <div class="wrap">
+      <div class="dimline"><span class="label">Process</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>진행 방식</h2>
+        <p>상담부터 시청까지, 별도의 준비 없이 시작하실 수 있습니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="rule"><span class="num">01</span></div><h3>상담 예약</h3><p>공간과 시공 범위를 함께 확인하고 일정을 조율합니다.</p></div>
+        <div class="step"><div class="rule"><span class="num">02</span></div><h3>케어 카메라 설치</h3><p>착공일에 맞춰 현장에 케어 카메라를 설치합니다.</p></div>
+        <div class="step"><div class="rule"><span class="num">03</span></div><h3>전용 링크 발송</h3><p>고객님께 전용 시청 링크와 QR을 보내드립니다. 앱 설치는 필요 없습니다.</p></div>
+        <div class="step"><div class="rule"><span class="num">04</span></div><h3>시청 &amp; 하이라이트</h3><p>공사 기간 내내 시청하시고, 완공 후 하이라이트 영상을 보관해 드립니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="why" id="why">
+    <div class="wrap why-grid">
+      <div>
+        <div class="dimline" style="margin-bottom:28px"><span class="label">Why Dowol</span><span class="rule"></span></div>
+        <h2 style="font-family:var(--font-display);font-weight:300;font-size:clamp(24px,3.2vw,32px);letter-spacing:-.01em;margin-bottom:18px">왜 도월디자인인가</h2>
+        <p style="color:var(--ink-soft);font-size:15px;max-width:38ch">케어 시스템은 도월디자인이 시공을 대하는 태도를 보여주는 하나의 방식일 뿐입니다.</p>
+      </div>
+      <div class="why-list">
+        <div class="why-item"><span class="idx">A</span><div><h3>시공 전 과정 공개</h3><p>가려진 공정 없이, 착공부터 마감까지 있는 그대로 보여드립니다.</p></div></div>
+        <div class="why-item"><span class="idx">B</span><div><h3>전담 PM 배정</h3><p>모든 현장에 담당 PM이 배정되어 케어 영상을 함께 확인하며 관리합니다.</p></div></div>
+        <div class="why-item"><span class="idx">C</span><div><h3>투명한 공정 보고</h3><p>주요 공정마다 진행 상황과 영상 기록을 함께 정리해 안내해 드립니다.</p></div></div>
+        <div class="why-item"><span class="idx">D</span><div><h3>근거에 기반한 대응</h3><p>혹시 모를 하자나 파손 발생 시, 영상 기록으로 신속하고 명확하게 대응합니다.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="dimline"><span class="label">Care Plan</span><span class="rule"></span></div>
+      <div class="section-head">
+        <h2>케어 시스템 안내</h2>
+        <p>공간 규모와 시공 범위에 따라 적합한 케어 구성을 상담을 통해 안내해 드립니다.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="pname">Basic Care</div>
+          <div class="pfor">원룸 · 소형 공간 시공</div>
+          <div class="pval">상담 후 안내<small>케어 카메라 1대 기준</small></div>
+          <ul class="price-list">
+            <li>실시간 시청</li>
+            <li>7일 녹화 보관</li>
+            <li>전용 시청 링크 발급</li>
+          </ul>
+          <a class="btn" href="#contact">상담 문의</a>
+        </div>
+        <div class="price-card">
+          <span class="tag">권장</span>
+          <div class="pname">Standard Care</div>
+          <div class="pfor">아파트 · 일반 주택 시공</div>
+          <div class="pval">상담 후 안내<small>케어 카메라 최대 3대</small></div>
+          <ul class="price-list">
+            <li>Basic Care 전체</li>
+            <li>30일 녹화 보관</li>
+            <li>공정 타임랩스 제공</li>
+            <li>도월 케어 인증</li>
+          </ul>
+          <a class="btn primary" href="#contact">상담 문의</a>
+        </div>
+        <div class="price-card">
+          <div class="pname">Premium Care</div>
+          <div class="pfor">상업 공간 · 대형 프로젝트</div>
+          <div class="pval">별도 협의<small>현장 규모에 맞춘 구성</small></div>
+          <ul class="price-list">
+            <li>Standard Care 전체</li>
+            <li>이상 감지 알림</li>
+            <li>전담 PM 통합 모니터링</li>
+            <li>완공 하이라이트 영상 제작</li>
+          </ul>
+          <a class="btn" href="#contact">상담 문의</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="dimline"><span class="label">FAQ</span><span class="rule"></span></div>
+      <div class="section-head"><h2>자주 묻는 질문</h2></div>
+      <div class="faq" id="faqList">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">케어 카메라 시청을 위해 앱을 설치해야 하나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>아니요. 전용 링크나 QR코드로 웹 브라우저에서 바로 시청하실 수 있어 별도 설치가 필요 없습니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">영상은 얼마나 보관되나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>케어 플랜에 따라 7~30일간 원본이 보관됩니다. 이후 공정 하이라이트 영상은 별도로 아카이브되어 완공 후에도 확인하실 수 있습니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">개인정보와 보안은 안전한가요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>시청 링크는 암호화되어 발급되며, 접근 권한이 있는 분만 확인하실 수 있도록 관리합니다. 현장 종료 후에는 접근 권한이 자동으로 회수됩니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">케어 시스템은 모든 프로젝트에 기본으로 포함되나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>네, 도월디자인과 함께하는 모든 시공에 기본 케어(Basic Care)가 포함됩니다. 공간 규모에 따라 Standard·Premium으로 안내해 드립니다.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">케어 카메라 설치는 언제 이루어지나요?<span class="plus">+</span></button>
+          <div class="faq-a"><p>착공일에 맞춰 설치되며, 상담 시 전체 시공 일정과 함께 안내해 드립니다.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact">
+        <div class="contact-grid">
+          <div>
+            <h2>프로젝트 상담을<br>예약해 보세요</h2>
+            <p class="lede">공간 정보를 남겨주시면, 시공 상담과 함께 도월 케어 시스템 구성을 안내해 드립니다.</p>
+            <div class="contact-alt">
+              <div class="row"><span>전화 상담</span><span>02-0000-0000</span></div>
+              <div class="row"><span>이메일</span><span>hello@dowoldesign.kr</span></div>
+              <div class="row"><span>상담 가능 시간</span><span>평일 10:00–19:00</span></div>
+            </div>
+          </div>
+          <form id="contactForm" novalidate>
+            <div class="row2">
+              <div class="field"><label for="f-name">이름</label><input id="f-name" name="name" type="text" required placeholder="홍길동"></div>
+              <div class="field"><label for="f-phone">연락처</label><input id="f-phone" name="phone" type="tel" required placeholder="010-0000-0000"></div>
+            </div>
+            <div class="field">
+              <label for="f-type">공간 유형</label>
+              <select id="f-type" name="type">
+                <option>원룸 / 소형 공간</option>
+                <option>아파트 / 일반 주택</option>
+                <option>상가 / 사무실</option>
+                <option>기타 (문의 내용에 기재)</option>
+              </select>
+            </div>
+            <div class="field"><label for="f-msg">문의 내용</label><textarea id="f-msg" name="message" placeholder="시공 시작 예정일, 공간 평수 등을 남겨주세요"></textarea></div>
+            <button type="submit" class="btn primary" style="width:100%">상담 예약 보내기</button>
+            <p class="form-note">남겨주신 정보는 상담 목적으로만 사용됩니다.</p>
+            <div class="success" id="formSuccess">상담 신청이 접수되었습니다. 영업일 기준 1일 이내 연락드리겠습니다.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div class="lockup">
+      <span class="kr">도월디자인</span>
+      <span class="en">DOWOL DESIGN</span>
+    </div>
+    <div class="foot-meta">
+      <div id="year">© 2026 DOWOL DESIGN. All rights reserved.</div>
+      <div>사업자 정보 및 주소는 계약 체결 시 안내드립니다.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toggle = document.getElementById('menuToggle');
+  var panel = document.getElementById('mobilePanel');
+  toggle.addEventListener('click', function(){
+    var open = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  panel.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ panel.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); });
+  });
+
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q');
+    var a = item.querySelector('.faq-a');
+    q.addEventListener('click', function(){
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(o){
+        if(o !== item){ o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null; o.querySelector('.faq-q').setAttribute('aria-expanded','false'); }
+      });
+      if(isOpen){
+        item.classList.remove('open'); a.style.maxHeight = null; q.setAttribute('aria-expanded','false');
+      } else {
+        item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; q.setAttribute('aria-expanded','true');
+      }
+    });
+  });
+
+  var form = document.getElementById('contactForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    document.getElementById('formSuccess').classList.add('show');
+    form.querySelectorAll('input,textarea,select,button').forEach(function(el){ el.disabled = true; });
+  });
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function tick(){
+    var el = document.getElementById('camTime');
+    if(!el) return;
+    var d = new Date();
+    el.textContent = d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  tick(); setInterval(tick, 1000);
+
+  document.getElementById('year').textContent = '© ' + new Date().getFullYear() + ' DOWOL DESIGN. All rights reserved.';
+})();
+</script>
+</body>
+</html>
